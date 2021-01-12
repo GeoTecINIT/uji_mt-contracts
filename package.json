@@ -1,0 +1,23 @@
+{
+  "name": "reputationmanagementcontracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "geohash-compression": "^1.0.0",
+    "geohash-poly": "^0.6.0",
+    "geohash-tree": "^1.0.3",
+    "s2base64tree": "^0.1.0",
+    "solc": "^0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "geohash-regions": "node ./data/geohash.js",
+    "s2base64tree": "node ./data/s2base64tree.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
