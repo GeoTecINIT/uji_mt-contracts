@@ -1,28 +1,28 @@
-const GeohashRegions = artifacts.require('GeohashRegions');
-const geohashTree = require('geohash-tree');
+const S2Regions = artifacts.require('S2Regions');
+const s2base64tree = require('s2base64tree');
 
 module.exports = async(callback) => {
   try {
-    const geohashRegions = await GeohashRegions.deployed();
+    const s2Regions = await S2Regions.deployed();
 
     const dm = require('./data/data-manager')();
-    const metadata = dm.data.UJI;
-    let data = dm.getGeohashTree('UJI');
+    const metadata = dm.data.GRU;
+    let data = dm.getS2Base64Tree('GRU');
 
-    if (parseInt((await geohashRegions.getRegionData(metadata.id))[0][0]) === 0) {
+    if (parseInt((await s2Regions.getRegionData(metadata.id))[0][0]) === 0) {
       console.log(`Adding id = ${metadata.id}, name = ${metadata.name}`);
-      const result = await geohashRegions.register(metadata.id, Buffer.from(metadata.name));
+      const result = await s2Regions.register(metadata.id, Buffer.from(metadata.name));
       console.log(`ok ${result.tx}`);
     }
 
     console.log(`data.length = ${data.length}`);
     
-    const chunks = geohashTree.chunkbinary(data, 128).map(chunk => chunk.map(x => x.toString()));
+    const chunks = s2base64tree.chunk(data, 128).map(chunk => chunk.map(x => x.toString()));
     for (let i = 0; i < chunks.length; i++) {
       try {
         const chunk = chunks[i];
         console.log(`Adding chunk size ${chunk.length} (${chunk.join(' ')})`);
-        const result = await geohashRegions.addMyTree(metadata.id, chunk);
+        const result = await s2Regions.addMyTree(metadata.id, chunk);
         console.log(`ok ${result.tx}`);
       } catch (err) {
         console.log(`ERROR = ${err}`);

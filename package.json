@@ -10,7 +10,7 @@
     "geohash-compression": "^1.0.0",
     "geohash-poly": "^0.6.0",
     "geohash-tree": "^1.0.3",
-    "s2base64tree": "^0.1.0",
+    "s2base64tree": "^0.1.1",
     "solc": "^0.8.0"
   },
   "devDependencies": {},
