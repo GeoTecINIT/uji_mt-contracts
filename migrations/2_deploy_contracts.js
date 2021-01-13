@@ -1,12 +1,13 @@
-const Utils = artifacts.require('Utils');
 const GeohashRegions = artifacts.require('GeohashRegions');
-const GeohashTrees = artifacts.require('GeohashTrees');
+const Regions = artifacts.require('Regions');
+const Utils = artifacts.require('Utils');
 
 module.exports = deployer => {
   deployer.deploy(Utils);
+  deployer.link(Utils, Regions);
   deployer.link(Utils, GeohashRegions);
+
+  deployer.link(Regions, GeohashRegions);
+
   deployer.deploy(GeohashRegions);
-  deployer.link(Utils, GeohashTrees);
-  deployer.link(GeohashRegions, GeohashTrees);
-  deployer.deploy(GeohashTrees);
 };

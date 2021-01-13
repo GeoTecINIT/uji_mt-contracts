@@ -21,7 +21,7 @@ module.exports = async(callback) => {
       console.log(`Trying length = ${currentLength}`);
       const subData = data.slice(0, currentLength);
       try {
-        await geohashRegion.registerAndAddSpaces(metadata.id, Buffer.from(metadata.name), subData);
+        await geohashRegion.registerAndAddCells(metadata.id, Buffer.from(metadata.name), subData);
         break;
       } catch (e) {
         console.log(`Error: ${e}`);

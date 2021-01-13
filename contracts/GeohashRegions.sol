@@ -2,126 +2,62 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 import './Utils.sol';
+import './Regions.sol';
 
-contract GeohashRegions {
-
-  struct Region {
-    RegionMetadata metadata;
-    uint64[] geohashes;
-    uint64[] unregisteredGeohashes;
-  }
-
-  struct RegionMetadata {
-    uint8 id;
-    address registrar;
-    bytes name;
-  }
-
-  mapping(uint256 => uint8) public spaces;
-
-  Region[] private regions;
-
-  function getRegionAndIndexFromId(uint8 id) internal view returns (Region memory region, int index) {
-    for (uint i = 0; i < regions.length; i++) {
-      if (regions[i].metadata.id == id) {
-        return (regions[i], int(i));
+contract GeohashRegions is Regions {
+  function expandTree(uint8[] memory data) private pure returns (uint64[] memory arr) {
+    arr = new uint64[](countTreeElements(data));
+    uint idx = 0;
+    uint64 shiftAmount = 56;
+    uint64 currentHash = 0;
+    for (uint i = 0; i < data.length; i++) {
+      currentHash &= ~(uint64(0xFF) << shiftAmount); // clear bit at current level
+      if (data[i] == 0x40) {
+        shiftAmount += 8;
+        continue;
       }
-    }
-    return (Region({
-      metadata: RegionMetadata({id: 0, registrar: address(0), name: ''}),
-      geohashes: new uint64[](0),
-      unregisteredGeohashes: new uint64[](0)
-    }), -1);
-  }
-
-  function getRegionFromId(uint8 id) internal view returns (Region memory region) {
-    int idx;
-    (region, idx) = getRegionAndIndexFromId(id);
-    return region;
-  }
-
-  function getRegionIdFromExactGeohash(uint64 geohash) public view returns (uint8 regionId) {
-    regionId = spaces[geohash];
-    return regionId;
-  }
-
-  function addSpace(Region memory region, uint64 geohash) internal returns (bool) {
-    uint8 destinationRegionId = spaces[geohash];
-    if (destinationRegionId == 0 || destinationRegionId == region.metadata.id) {
-      spaces[geohash] = region.metadata.id;
-      return true;
-    }
-    return false;
-  }
-
-  function addSpaces(Region memory region, uint64[] memory geohashes) internal returns (Region memory, uint addedCount, uint failedCount) {
-    uint64[] memory newGeohashes = Utils.extendUint64Array(region.geohashes, geohashes.length);
-    uint256 newGeohashesIdx = region.geohashes.length;
-
-    uint64[] memory newUnregisteredGeohashes = Utils.extendUint64Array(region.unregisteredGeohashes, geohashes.length);
-    uint256 newUnregisteredGeohashesIdx = region.unregisteredGeohashes.length;
-
-    for (uint i = 0; i < geohashes.length; i++) {
-      if (addSpace(region, geohashes[i])) {
-        newGeohashes[newGeohashesIdx++] = geohashes[i];
+      currentHash |= (data[i] & uint64(0x1F)) << shiftAmount;
+      if (data[i] & 0x20 > 0) {
+        shiftAmount -= 8;
       } else {
-        newUnregisteredGeohashes[newUnregisteredGeohashesIdx++] = geohashes[i];
+        arr[idx++] = currentHash;
       }
     }
-
-    region.geohashes = Utils.cutUint64Array(newGeohashes, newGeohashesIdx);
-    region.unregisteredGeohashes = Utils.cutUint64Array(newUnregisteredGeohashes, newUnregisteredGeohashesIdx);
-
-    return (region, newGeohashesIdx, newUnregisteredGeohashesIdx);
   }
 
-  function addMySpaces(uint8 id, uint64[] memory geohashes) public returns (uint addedCount, uint failedCount) {
-    (Region memory region, int idx) = getRegionAndIndexFromId(id);
-    require(region.metadata.registrar == msg.sender && idx > -1);
-    (region, addedCount, failedCount) = addSpaces(region, geohashes);
+  function countTreeElements(uint8[] memory data) private pure returns (uint256 length) {
+    length = 0;
+    int deep = 0;
+    for (uint i = 0; i < data.length; i++) {
+      require(deep > -1 && deep < 8);
 
-    regions[uint(idx)] = region;
+      if ((data[i] & 0x20) > 0) {
+        deep++;
+      } else if (data[i] == 0x40) {
+        deep--;
+      }
 
-    return (addedCount, failedCount);
-  }
-
-  function register(uint8 id, bytes memory name) public {
-    Region memory existingRegion = getRegionFromId(id);
-    require(existingRegion.metadata.id == 0);
-
-    Region memory newRegion = Region({
-      metadata: RegionMetadata({
-        id: id,
-        registrar: msg.sender,
-        name: name
-      }),
-      geohashes: new uint64[](0),
-      unregisteredGeohashes: new uint64[](0)
-    });
-    regions.push(newRegion);
-  }
-
-  function registerAndAddSpaces(uint8 id, bytes memory name, uint64[] memory geohashes) public returns (uint addedCount, uint failedCount) {
-    register(id, name);
-    return addMySpaces(id, geohashes);
-  }
-
-  function getRegionsList() public view returns (RegionMetadata[] memory results) {
-    results = new RegionMetadata[](regions.length);
-    for (uint256 i = 0; i < regions.length; i++) {
-      results[i] = regions[i].metadata;
+      if ((data[i] & 0x60) == 0) { // 011 00000
+        length++;
+      }
     }
-    return results;
+    return length;
   }
 
-  function getRegionData(uint8 id) public view returns (Region memory region) {
-    return getRegionFromId(id);
+  function addMyTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
+    uint64[] memory hashes = expandTree(data);
+    return addMyCells(id, hashes);
   }
 
-  function query(uint64 geohash) public view returns (RegionMetadata memory region) {
+  function registerAndAddTree(uint8 id, bytes memory name, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
+    register(id, name);
+    return addMyTree(id, data);
+  }
+
+  function query(uint64 geohash) public view override returns (RegionMetadata memory region) {
     uint64 shiftBit = 0xffffffffffffff00;
     while (shiftBit > 0) {
-      uint8 regionId = getRegionIdFromExactGeohash(geohash);
+      uint8 regionId = getRegionIdFromExactCellID(geohash);
       if (regionId > 0) {
         return getRegionFromId(regionId).metadata;
       }

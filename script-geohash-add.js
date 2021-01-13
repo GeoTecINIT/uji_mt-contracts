@@ -8,8 +8,11 @@ module.exports = async(callback) => {
     const metadata = dm.data.UJI;
     let data = dm.getGeohash('UJI');
 
-    console.log(`Adding id = ${metadata.id}, name = ${metadata.name}`);
-    await geohashRegion.register(metadata.id, Buffer.from(metadata.name));
+    if (parseInt((await geohashRegions.getRegionData(metadata.id))[0][0]) === 0) {
+      console.log(`Adding id = ${metadata.id}, name = ${metadata.name}`);
+      const result = await geohashRegions.register(metadata.id, Buffer.from(metadata.name));
+      console.log(`ok ${result.tx}`);
+    }
 
     console.log(`data.length = ${data.length}`);
     console.log(`Data = ${JSON.stringify(data)}`);
@@ -17,7 +20,7 @@ module.exports = async(callback) => {
     while (data.length) {
       const addData = data.splice(0, data.length > 96 ? 96 : data.length);
       console.log(`Adding ${JSON.stringify(addData.join(','))}`);
-      await geohashRegion.addMySpaces(metadata.id, addData);
+      await geohashRegion.addMyCells(metadata.id, addData);
     }
 
     console.log('FINISHED');
