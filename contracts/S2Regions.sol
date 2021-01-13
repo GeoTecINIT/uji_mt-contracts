@@ -10,9 +10,9 @@ contract S2Regions is Regions {
     uint64 markBits =   0xfffffffffffffff8; // 1111 1111 ... 1111 1000
     uint64 finalMark =  0x0000000000000004; // 0000 0000 ... 0000 0100
     while (markBits > 0) {
-      uint8 regionId = getRegionIdFromExactCellID(cellID);
+      uint8 regionId = getRegionIDFromExactCellID(cellID);
       if (regionId > 0) {
-        return getRegionFromId(regionId).metadata;
+        return getRegionFromID(regionId).metadata;
       }
 
       cellID = (cellID & markBits) | finalMark;

@@ -27,4 +27,28 @@ library Utils {
     }
     return false;
   }
+
+  function deleteFromAddressArray(address[] memory array, address find) public pure returns (address[] memory newArray) {
+    newArray = new address[](array.length - 1);
+    uint newIdx = 0;
+    for (uint i = 0; i < array.length; i++) {
+      if (array[i] != find) {
+        newArray[newIdx++] = array[i];
+      }
+    }
+
+    return newArray;
+  }
+
+  function pushUniqueToAddressArray(address[] memory array, address value) public pure returns (address[] memory newArray) {
+    newArray = new address[](array.length + 1);
+    for (uint i = 0; i < array.length; i++) {
+      if (array[i] == value) {
+        return array;
+      }
+      newArray[i] = array[i];
+    }
+    newArray[newArray.length - 1] = value;
+    return newArray;
+  }
 }

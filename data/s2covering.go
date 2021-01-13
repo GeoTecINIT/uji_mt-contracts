@@ -8,7 +8,7 @@ import (
 	"github.com/ponlawat-w/golang-s2covergeojson"
 )
 
-var regionCoverer = s2.RegionCoverer{MinLevel: 1, MaxLevel: 17, MaxCells: 6000000}
+var regionCoverer = s2.RegionCoverer{MinLevel: 1, MaxLevel: 14, MaxCells: 6000000}
 
 func checkError(err error) {
 	if err != nil {

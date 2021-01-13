@@ -28,7 +28,7 @@ abstract contract Regions {
     CLOSE_BYTE = closeByte;
   }
 
-  function getRegionAndIndexFromId(uint8 id) internal view returns (Region memory region, int index) {
+  function getRegionAndIndexFromID(uint8 id) internal view returns (Region memory region, int index) {
     for (uint i = 0; i < regions.length; i++) {
       if (regions[i].metadata.id == id) {
         return (regions[i], int(i));
@@ -41,18 +41,27 @@ abstract contract Regions {
     }), -1);
   }
 
-  function getRegionFromId(uint8 id) internal view returns (Region memory region) {
+  function getRegionFromID(uint8 id) internal view returns (Region memory region) {
     int idx;
-    (region, idx) = getRegionAndIndexFromId(id);
+    (region, idx) = getRegionAndIndexFromID(id);
     return region;
   }
 
-  function getRegionIdFromExactCellID(uint64 cellID) public view returns (uint8 regionId) {
-    regionId = spaces[cellID];
-    return regionId;
+  function getRegionIDFromExactCellID(uint64 cellID) public view returns (uint8 regionID) {
+    regionID = spaces[cellID];
+    return regionID;
   }
 
-  function addCell(Region memory region, uint64 cellID) internal returns (bool) {
+  function getMyRegionID() public view returns (uint8 regionID) {
+    for (uint i = 0; i < regions.length; i++) {
+      if (regions[i].metadata.registrar == msg.sender) {
+        return regions[i].metadata.id;
+      }
+    }
+    return 0;
+  }
+
+  function addRegionCell(Region memory region, uint64 cellID) internal returns (bool) {
     uint8 destinationRegionId = spaces[cellID];
     if (destinationRegionId == 0 || destinationRegionId == region.metadata.id) {
       spaces[cellID] = region.metadata.id;
@@ -61,7 +70,7 @@ abstract contract Regions {
     return false;
   }
 
-  function addCells(Region memory region, uint64[] memory cellIDs) internal returns (Region memory, uint addedCount, uint failedCount) {
+  function addRegionCells(Region memory region, uint64[] memory cellIDs) internal returns (Region memory, uint addedCount, uint failedCount) {
     uint64[] memory newCells = Utils.extendUint64Array(region.cellIDs, cellIDs.length);
     uint256 newCellsIdx = region.cellIDs.length;
 
@@ -69,7 +78,7 @@ abstract contract Regions {
     uint256 newFailedCellsIdx = region.failedCellIDs.length;
 
     for (uint i = 0; i < cellIDs.length; i++) {
-      if (addCell(region, cellIDs[i])) {
+      if (addRegionCell(region, cellIDs[i])) {
         newCells[newCellsIdx++] = cellIDs[i];
       } else if (!Utils.existsInUint64Array(newFailedCells, cellIDs[i])) {
         newFailedCells[newFailedCellsIdx++] = cellIDs[i];
@@ -82,18 +91,18 @@ abstract contract Regions {
     return (region, newCellsIdx, newFailedCellsIdx);
   }
 
-  function addMyCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
-    (Region memory region, int idx) = getRegionAndIndexFromId(id);
+  function addMyRegionCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
+    (Region memory region, int idx) = getRegionAndIndexFromID(id);
     require(region.metadata.registrar == msg.sender && idx > -1);
-    (region, addedCount, failedCount) = addCells(region, cellIDs);
+    (region, addedCount, failedCount) = addRegionCells(region, cellIDs);
 
     regions[uint(idx)] = region;
 
     return (addedCount, failedCount);
   }
 
-  function register(uint8 id, bytes memory name) public {
-    Region memory existingRegion = getRegionFromId(id);
+  function registerRegion(uint8 id, bytes memory name) public {
+    Region memory existingRegion = getRegionFromID(id);
     require(existingRegion.metadata.id == 0);
 
     Region memory newRegion = Region({
@@ -108,9 +117,9 @@ abstract contract Regions {
     regions.push(newRegion);
   }
 
-  function registerAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
-    register(id, name);
-    return addMyCells(id, cellIDs);
+  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
+    registerRegion(id, name);
+    return addMyRegionCells(id, cellIDs);
   }
 
   function getRegionsList() public view returns (RegionMetadata[] memory results) {
@@ -122,7 +131,7 @@ abstract contract Regions {
   }
 
   function getRegionData(uint8 id) public view returns (Region memory region) {
-    return getRegionFromId(id);
+    return getRegionFromID(id);
   }
 
   function countTreeElements(uint8[] memory data) private view returns (uint256 length) {
@@ -168,20 +177,20 @@ abstract contract Regions {
 
   function addMyTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
     uint64[] memory hashes = expandTree(data);
-    return addMyCells(id, hashes);
+    return addMyRegionCells(id, hashes);
   }
 
-  function registerAndAddTree(uint8 id, bytes memory name, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
-    register(id, name);
+  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
+    registerRegion(id, name);
     return addMyTree(id, data);
   }
 
-  function query(uint64 cellID) public view returns (RegionMetadata memory region) {
+  function query(uint64 cellID) public virtual view returns (RegionMetadata memory region) {
     uint64 shiftBit = 0xffffffffffffff00;
     while (shiftBit > 0) {
-      uint8 regionId = getRegionIdFromExactCellID(cellID);
+      uint8 regionId = getRegionIDFromExactCellID(cellID);
       if (regionId > 0) {
-        return getRegionFromId(regionId).metadata;
+        return getRegionFromID(regionId).metadata;
       }
 
       cellID &= shiftBit;

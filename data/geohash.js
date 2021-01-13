@@ -3,7 +3,7 @@ const geohashPoly = require('geohash-poly');
 const compressGeohash = require('geohash-compression');
 const geohashTree = require('geohash-tree');
 
-const PRECISION = 7;
+const PRECISION = 6;
 
 const geometryToGeohash = (geometry, precision) => new Promise((resolve, reject) => {
   geohashPoly({coords: geometry.coordinates, precision: precision}, (err, hashes) => {
