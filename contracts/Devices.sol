@@ -37,6 +37,7 @@ abstract contract Devices {
 
   function updateDeviceLocation(address addr, uint64 location) virtual internal {
     Device memory device = devices[addr];
+    require(device.active);
     device.location = location;
     device.lastUpdatedEpoch = block.timestamp;
     devices[addr] = device;
@@ -44,6 +45,7 @@ abstract contract Devices {
 
   function updateDeviceServices(address addr, uint32[] memory services) virtual internal {
     Device memory device = devices[addr];
+    require(device.active);
     device.services = services;
     device.lastUpdatedEpoch = block.timestamp;
     devices[addr] = device;
@@ -51,6 +53,7 @@ abstract contract Devices {
 
   function updateDevicesIPs(address addr, uint32 ipv4, uint256 ipv6) virtual internal {
     Device memory device = devices[addr];
+    require(device.active);
     device.ipv4 = ipv4;
     device.ipv6 = ipv6;
     device.lastUpdatedEpoch = block.timestamp;
@@ -59,26 +62,6 @@ abstract contract Devices {
 
   function deactivateDevice(address addr) virtual internal {
     devices[addr].active = false;
-  }
-
-  function registerMyDevice(uint64 location, uint32 ipv4, uint256 ipv6, uint32[] memory services) virtual public {
-    registerDevice(msg.sender, location, ipv4, ipv6, services);
-  }
-
-  function updateMyDeviceLocation(uint64 location) virtual public {
-    updateDeviceLocation(msg.sender, location);
-  }
-
-  function updateMyDeviceServices(uint32[] memory services) virtual public {
-    updateDeviceServices(msg.sender, services);
-  }
-
-  function updateMyDeviceIPs(uint32 ipv4, uint256 ipv6) virtual public {
-    updateDevicesIPs(msg.sender, ipv4, ipv6);
-  }
-
-  function deactivateMyDevice() virtual public {
-    deactivateDevice(msg.sender);
   }
 
   function getDevicesFromAddresses(address[] memory addresses) public view returns (Device[] memory devicesList) {

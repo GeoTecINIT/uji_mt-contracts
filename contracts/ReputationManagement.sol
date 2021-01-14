@@ -72,37 +72,31 @@ contract ReputationManagement is S2Regions, Devices {
     }
   }
 
-  function updateDeviceLocation(address addr, uint64 newLocation) internal override {
-    uint64 currentLocation = devices[addr].location;
+  function updateMyDeviceLocation(uint64 newLocation) public returns (uint8) {
+    uint64 currentLocation = devices[msg.sender].location;
     if (currentLocation == newLocation) {
-      return;
+      return 0;
     }
 
     uint8 currentRegionID = query(currentLocation).id;
     uint8 newRegionID = query(newLocation).id;
+
+    updateDeviceLocation(msg.sender, newLocation);
     
     if (currentRegionID != newRegionID) {
-      updateDeviceRegion(addr, currentRegionID, newRegionID);
+      updateDeviceRegion(msg.sender, currentRegionID, newRegionID);
     }
 
-    super.updateDeviceLocation(addr, newLocation);
+    return newRegionID;
   }
 
-  function updateMyDeviceLocation(uint64 newLocation) public override {
-    updateDeviceLocation(msg.sender, newLocation);
-  }
-
-  function registerMyDevice(uint64 location, uint32 ipv4, uint256 ipv6, uint32[] memory services) public override {
-    registerDevice(msg.sender, location, ipv4, ipv6, services);
+  function registerMyDevice(uint64 location, uint32 ipv4, uint256 ipv6, uint32[] memory services) public {
+    registerDevice(msg.sender, 0, ipv4, ipv6, services);
     updateMyDeviceLocation(location);
   }
 
-  function deactivateDevice(address addr) internal override {
-    deleteDeviceRegion(addr);
-    super.deactivateDevice(addr);
-  }
-
-  function deactivateMyDevice() public override {
+  function deactivateMyDevice() public {
+    deleteDeviceRegion(msg.sender);
     deactivateDevice(msg.sender);
   }
 

@@ -29,6 +29,9 @@ library Utils {
   }
 
   function deleteFromAddressArray(address[] memory array, address find) public pure returns (address[] memory newArray) {
+    if (array.length == 0) {
+      return array;
+    }
     newArray = new address[](array.length - 1);
     uint newIdx = 0;
     for (uint i = 0; i < array.length; i++) {
