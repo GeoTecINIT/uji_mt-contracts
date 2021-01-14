@@ -222,4 +222,7 @@ package-lock.json
 
 # End of https://www.toptal.com/developers/gitignore/api/solidity,soliditytruffle,node,go
 
+passwords.js
+
 data/out/*
+network/node*
