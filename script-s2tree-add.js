@@ -11,7 +11,7 @@ module.exports = async(callback) => {
 
     if (parseInt((await s2Regions.getRegionData(metadata.id))[0][0]) === 0) {
       console.log(`Adding id = ${metadata.id}, name = ${metadata.name}`);
-      const result = await s2Regions.register(metadata.id, Buffer.from(metadata.name));
+      const result = await s2Regions.register(metadata.id, Buffer.from(metadata.name), 0, 0);
       console.log(`ok ${result.tx}`);
     }
 

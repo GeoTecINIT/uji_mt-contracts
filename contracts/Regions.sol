@@ -17,6 +17,8 @@ abstract contract Regions {
     uint8 id;
     address registrar;
     bytes name;
+    uint32 ipv4;
+    uint256 ipv6;
   }
 
   Region[] private regions;
@@ -35,7 +37,7 @@ abstract contract Regions {
       }
     }
     return (Region({
-      metadata: RegionMetadata({id: 0, registrar: address(0), name: ''}),
+      metadata: RegionMetadata({id: 0, registrar: address(0), name: '', ipv4: 0, ipv6: 0}),
       cellIDs: new uint64[](0),
       failedCellIDs: new uint64[](0)
     }), -1);
@@ -50,15 +52,6 @@ abstract contract Regions {
   function getRegionIDFromExactCellID(uint64 cellID) public view returns (uint8 regionID) {
     regionID = spaces[cellID];
     return regionID;
-  }
-
-  function getMyRegionID() public view returns (uint8 regionID) {
-    for (uint i = 0; i < regions.length; i++) {
-      if (regions[i].metadata.registrar == msg.sender) {
-        return regions[i].metadata.id;
-      }
-    }
-    return 0;
   }
 
   function addRegionCell(Region memory region, uint64 cellID) internal returns (bool) {
@@ -101,7 +94,7 @@ abstract contract Regions {
     return (addedCount, failedCount);
   }
 
-  function registerRegion(uint8 id, bytes memory name) public {
+  function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint256 ipv6) public {
     Region memory existingRegion = getRegionFromID(id);
     require(existingRegion.metadata.id == 0);
 
@@ -109,7 +102,9 @@ abstract contract Regions {
       metadata: RegionMetadata({
         id: id,
         registrar: msg.sender,
-        name: name
+        name: name,
+        ipv4: ipv4,
+        ipv6: ipv6
       }),
       cellIDs: new uint64[](0),
       failedCellIDs: new uint64[](0)
@@ -117,9 +112,25 @@ abstract contract Regions {
     regions.push(newRegion);
   }
 
-  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
-    registerRegion(id, name);
+  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint256 ipv6) public returns (uint addedCount, uint failedCount) {
+    registerRegion(id, name, ipv4, ipv6);
     return addMyRegionCells(id, cellIDs);
+  }
+
+  function updateRegionName(uint8 regionID, bytes memory newName) public {
+    (Region memory region, int index) = getRegionAndIndexFromID(regionID);
+    require(index > -1 && region.metadata.registrar == msg.sender);
+    regions[uint(index)].metadata.name = newName;
+  }
+
+  function updateRegionIPs(uint8 regionID, uint32 ipv4, uint256 ipv6) public {
+    (Region memory region, int index) = getRegionAndIndexFromID(regionID);
+    require(index > -1 && region.metadata.registrar == msg.sender);
+
+    RegionMetadata memory metadata = region.metadata;
+    metadata.ipv4 = ipv4;
+    metadata.ipv6 = ipv6;
+    regions[uint(index)].metadata = metadata;
   }
 
   function getRegionsList() public view returns (RegionMetadata[] memory results) {
@@ -180,8 +191,8 @@ abstract contract Regions {
     return addMyRegionCells(id, hashes);
   }
 
-  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
-    registerRegion(id, name);
+  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint256 ipv6) public returns (uint addedCount, uint failedCount) {
+    registerRegion(id, name, ipv4, ipv6);
     return addMyTree(id, data);
   }
 
@@ -196,6 +207,6 @@ abstract contract Regions {
       cellID &= shiftBit;
       shiftBit = shiftBit << 8;
     }
-    return RegionMetadata({id: 0, registrar: address(0), name: ""});
+    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0});
   }
 }

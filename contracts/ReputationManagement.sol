@@ -47,7 +47,7 @@ contract ReputationManagement is S2Regions, Devices {
   }
 
   function addFeedback(address deviceAddr, uint16 feedback) public {
-    uint8 regionID = getMyRegionID();
+    uint8 regionID = query(devices[deviceAddr].location).id;
     require(regionID > 0);
     Reputation memory reputation = reputations[deviceAddr][regionID];
     reputation.value = uint16(

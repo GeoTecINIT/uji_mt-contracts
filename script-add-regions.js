@@ -32,6 +32,8 @@ module.exports = async(callback) => {
         await repMan.registerRegion(
           metadata.id,
           Buffer.from(metadata.name),
+          0,
+          0,
           { from: accounts[k % 3] }
         );
         p1('OK. ');
