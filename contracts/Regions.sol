@@ -6,6 +6,12 @@ import './Utils.sol';
 abstract contract Regions {
   uint8 internal OPEN_BYTE;
   uint8 internal CLOSE_BYTE;
+  uint8 internal DATA_MASK;
+
+  uint64 internal LEVEL_LENGTH;
+  uint64 internal TREE_DATA_LENGTH;
+
+  uint64 private TREE_DATA_MARK_BITS;
 
   struct Region {
     RegionMetadata metadata;
@@ -25,9 +31,23 @@ abstract contract Regions {
 
   mapping(uint64 => uint8) private spaces;
 
-  constructor(uint8 openByte, uint8 closeByte) {
+  constructor(
+    uint8 openByte,
+    uint8 closeByte,
+    uint64 levelLength,
+    uint64 treeDataLength
+  ) {
     OPEN_BYTE = openByte;
     CLOSE_BYTE = closeByte;
+
+    LEVEL_LENGTH = levelLength;
+    TREE_DATA_LENGTH = treeDataLength;
+
+    uint64 markBits = 0;
+    for (uint64 i = 0; i < TREE_DATA_LENGTH; i++) {
+      markBits |= (uint64(1) << i);
+    }
+    TREE_DATA_MARK_BITS = markBits;
   }
 
   function getRegionAndIndexFromID(uint8 id) internal view returns (Region memory region, int index) {
@@ -158,7 +178,7 @@ abstract contract Regions {
         deep--;
       }
 
-      if ((data[i] & OPEN_CLOSE_BYTE) == 0) { // 011 00000
+      if ((data[i] & OPEN_CLOSE_BYTE) == 0) { // geohash: 011 00000, s2: 11 000000
         length++;
       }
     }
@@ -168,17 +188,17 @@ abstract contract Regions {
   function expandTree(uint8[] memory data) private view returns (uint64[] memory arr) {
     arr = new uint64[](countTreeElements(data));
     uint idx = 0;
-    uint64 shiftAmount = 56;
+    uint64 shiftAmount = 64 - TREE_DATA_LENGTH;
     uint64 currentHash = 0;
     for (uint i = 0; i < data.length; i++) {
-      currentHash &= ~(uint64(0xFF) << shiftAmount); // clear bit at current level
+      currentHash &= ~(TREE_DATA_MARK_BITS << shiftAmount); // clear bit at current level
       if (data[i] == CLOSE_BYTE) {
-        shiftAmount += 8;
+        shiftAmount += TREE_DATA_LENGTH;
         continue;
       }
-      currentHash |= (data[i] & uint64(0x1F)) << shiftAmount;
+      currentHash |= (uint64(data[i] & TREE_DATA_MARK_BITS) << shiftAmount);
       if ((data[i] & OPEN_BYTE) > 0) {
-        shiftAmount -= 8;
+        shiftAmount -= TREE_DATA_LENGTH;
       } else {
         arr[idx++] = currentHash;
       }
@@ -205,7 +225,7 @@ abstract contract Regions {
       }
 
       cellID &= shiftBit;
-      shiftBit = shiftBit << 8;
+      shiftBit = shiftBit << LEVEL_LENGTH;
     }
     return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0});
   }
