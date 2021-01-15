@@ -22,6 +22,8 @@ module.exports = async(callback) => {
           address: accounts[0]
         },
         genesis: genesis
+      }, api: {
+        port: 80
       }
     };
     
