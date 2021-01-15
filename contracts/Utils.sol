@@ -28,6 +28,17 @@ library Utils {
     return false;
   }
 
+  function substractFromUint64Array(uint64[] memory array, uint64[] memory unwantedItems) public pure returns (uint64[] memory newArray) {
+    uint64[] memory cutArray = new uint64[](array.length);
+    uint index = 0;
+    for (uint i = 0; i < array.length; i++) {
+      if (!existsInUint64Array(unwantedItems, array[i])) {
+        cutArray[index++] = array[i];
+      }
+    }
+    return cutUint64Array(cutArray, index);
+  }
+
   function deleteFromAddressArray(address[] memory array, address find) public pure returns (address[] memory newArray) {
     if (array.length == 0) {
       return array;

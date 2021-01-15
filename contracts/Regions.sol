@@ -70,8 +70,7 @@ abstract contract Regions {
   }
 
   function getRegionIDFromExactCellID(uint64 cellID) public view returns (uint8 regionID) {
-    regionID = spaces[cellID];
-    return regionID;
+    return spaces[cellID];
   }
 
   function addRegionCell(Region memory region, uint64 cellID) internal returns (bool) {
@@ -112,6 +111,26 @@ abstract contract Regions {
     regions[uint(idx)] = region;
 
     return (addedCount, failedCount);
+  }
+
+  function clearMyFailedCells(uint8 id) public {
+    (Region memory region, int index) = getRegionAndIndexFromID(id);
+    require(index > -1 && region.metadata.registrar == msg.sender);
+
+    regions[uint(index)].failedCellIDs = new uint64[](0);
+  }
+
+  function removeMyRegionCells(uint8 id, uint64[] memory cellIDs) public {
+    (Region memory region, int index) = getRegionAndIndexFromID(id);
+    require(index > -1 && region.metadata.registrar == msg.sender);
+
+    for (uint i = 0; i < cellIDs.length; i++) {
+      if (getRegionIDFromExactCellID(cellIDs[i]) == id) {
+        spaces[cellIDs[i]] = 0;
+      }
+    }
+
+    regions[uint(index)].failedCellIDs = Utils.substractFromUint64Array(region.failedCellIDs, cellIDs);
   }
 
   function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint256 ipv6) public {
