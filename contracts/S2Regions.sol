@@ -27,6 +27,6 @@ contract S2Regions is Regions {
       markBits = markBits << 2;
       finalMark = finalMark << 2;
     }
-    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0});
+    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0});
   }
 }

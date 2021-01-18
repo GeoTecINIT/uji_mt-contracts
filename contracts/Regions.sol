@@ -17,6 +17,7 @@ abstract contract Regions {
     RegionMetadata metadata;
     uint64[] cellIDs;
     uint64[] failedCellIDs;
+    uint lastUpdatedEpoch;
   }
 
   struct RegionMetadata {
@@ -25,6 +26,7 @@ abstract contract Regions {
     bytes name;
     uint32 ipv4;
     uint128 ipv6;
+    uint lastUpdatedEpoch;
   }
 
   Region[] private regions;
@@ -57,9 +59,10 @@ abstract contract Regions {
       }
     }
     return (Region({
-      metadata: RegionMetadata({id: 0, registrar: address(0), name: '', ipv4: 0, ipv6: 0}),
+      metadata: RegionMetadata({id: 0, registrar: address(0), name: '', ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0}),
       cellIDs: new uint64[](0),
-      failedCellIDs: new uint64[](0)
+      failedCellIDs: new uint64[](0),
+      lastUpdatedEpoch: 0
     }), -1);
   }
 
@@ -99,6 +102,7 @@ abstract contract Regions {
 
     region.cellIDs = Utils.cutUint64Array(newCells, newCellsIdx);
     region.failedCellIDs = Utils.cutUint64Array(newFailedCells, newFailedCellsIdx);
+    region.lastUpdatedEpoch = block.timestamp;
 
     return (region, newCellsIdx, newFailedCellsIdx);
   }
@@ -117,7 +121,9 @@ abstract contract Regions {
     (Region memory region, int index) = getRegionAndIndexFromID(id);
     require(index > -1 && region.metadata.registrar == msg.sender);
 
-    regions[uint(index)].failedCellIDs = new uint64[](0);
+    region.failedCellIDs = new uint64[](0);
+    region.lastUpdatedEpoch = block.timestamp;
+    regions[uint(index)] = region;
   }
 
   function removeMyRegionCells(uint8 id, uint64[] memory cellIDs) public {
@@ -130,7 +136,9 @@ abstract contract Regions {
       }
     }
 
-    regions[uint(index)].failedCellIDs = Utils.substractFromUint64Array(region.failedCellIDs, cellIDs);
+    region.failedCellIDs = Utils.substractFromUint64Array(region.failedCellIDs, cellIDs);
+    region.lastUpdatedEpoch = block.timestamp;
+    regions[uint(index)] = region;
   }
 
   function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint128 ipv6) public {
@@ -143,10 +151,12 @@ abstract contract Regions {
         registrar: msg.sender,
         name: name,
         ipv4: ipv4,
-        ipv6: ipv6
+        ipv6: ipv6,
+        lastUpdatedEpoch: block.timestamp
       }),
       cellIDs: new uint64[](0),
-      failedCellIDs: new uint64[](0)
+      failedCellIDs: new uint64[](0),
+      lastUpdatedEpoch: block.timestamp
     });
     regions.push(newRegion);
   }
@@ -159,7 +169,10 @@ abstract contract Regions {
   function updateRegionName(uint8 regionID, bytes memory newName) public {
     (Region memory region, int index) = getRegionAndIndexFromID(regionID);
     require(index > -1 && region.metadata.registrar == msg.sender);
-    regions[uint(index)].metadata.name = newName;
+    RegionMetadata memory metadata = region.metadata;
+    metadata.name = newName;
+    metadata.lastUpdatedEpoch = block.timestamp;
+    regions[uint(index)].metadata = metadata;
   }
 
   function updateRegionIPs(uint8 regionID, uint32 ipv4, uint128 ipv6) public {
@@ -169,12 +182,13 @@ abstract contract Regions {
     RegionMetadata memory metadata = region.metadata;
     metadata.ipv4 = ipv4;
     metadata.ipv6 = ipv6;
+    metadata.lastUpdatedEpoch = block.timestamp;
     regions[uint(index)].metadata = metadata;
   }
 
   function getRegionsList() public view returns (RegionMetadata[] memory results) {
     results = new RegionMetadata[](regions.length);
-    for (uint256 i = 0; i < regions.length; i++) {
+    for (uint i = 0; i < regions.length; i++) {
       results[i] = regions[i].metadata;
     }
     return results;
@@ -246,6 +260,6 @@ abstract contract Regions {
       cellID &= shiftBit;
       shiftBit = shiftBit << LEVEL_LENGTH;
     }
-    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0});
+    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0});
   }
 }
