@@ -1,11 +1,11 @@
-var miningThreads = 1;
+var miningThreads = 4;
 
 function checkMining() {
   if (eth.getBlock('pending').transactions.length) {
     if (eth.mining) {
       return;
     }
-    miner.start(1);
+    miner.start(miningThreads);
   } else {
     miner.stop();
   }
