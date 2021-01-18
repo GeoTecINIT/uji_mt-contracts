@@ -107,7 +107,7 @@ abstract contract Regions {
     return (region, newCellsIdx, newFailedCellsIdx);
   }
 
-  function addMyRegionCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
+  function addRegionCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
     (Region memory region, int idx) = getRegionAndIndexFromID(id);
     require(region.metadata.registrar == msg.sender && idx > -1);
     (region, addedCount, failedCount) = addRegionCells(region, cellIDs);
@@ -117,7 +117,7 @@ abstract contract Regions {
     return (addedCount, failedCount);
   }
 
-  function clearMyFailedCells(uint8 id) public {
+  function clearFailedCells(uint8 id) public {
     (Region memory region, int index) = getRegionAndIndexFromID(id);
     require(index > -1 && region.metadata.registrar == msg.sender);
 
@@ -126,7 +126,7 @@ abstract contract Regions {
     regions[uint(index)] = region;
   }
 
-  function removeMyRegionCells(uint8 id, uint64[] memory cellIDs) public {
+  function removeRegionCells(uint8 id, uint64[] memory cellIDs) public {
     (Region memory region, int index) = getRegionAndIndexFromID(id);
     require(index > -1 && region.metadata.registrar == msg.sender);
 
@@ -163,7 +163,7 @@ abstract contract Regions {
 
   function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
-    return addMyRegionCells(id, cellIDs);
+    return addRegionCells(id, cellIDs);
   }
 
   function updateRegionName(uint8 regionID, bytes memory newName) public {
@@ -239,14 +239,14 @@ abstract contract Regions {
   }
 
 
-  function addMyTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
+  function addTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
     uint64[] memory hashes = expandTree(data);
-    return addMyRegionCells(id, hashes);
+    return addRegionCells(id, hashes);
   }
 
   function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
-    return addMyTree(id, data);
+    return addTree(id, data);
   }
 
   function query(uint64 cellID) public virtual view returns (RegionMetadata memory region) {

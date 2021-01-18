@@ -1,7 +1,7 @@
-const ReputationManagement = artifacts.require('ReputationManagement');
+const S2Regions = artifacts.require('S2Regions');
+const Devices = artifacts.require('Devices');
+// const ReputationManagement = artifacts.require('ReputationManagement');
 
-const { timeStamp } = require('console');
-const { format } = require('path');
 const { stdout } = require('process');
 const { chunk } = require('s2base64tree');
 
@@ -18,21 +18,24 @@ module.exports = async(callback) => {
     const failed = [];
 
     p1('Preparing contract...');
-    const repMan = await ReputationManagement.deployed();
+    const regions = await S2Regions.deployed();
+    const devices = await Devices.deployed();
+    // const repMan = await ReputationManagement.deployed();
     const accounts = await web3.eth.getAccounts();
     p2('OK');
 
-    const keys = dataManager.listKeys();
+    // const keys = dataManager.listKeys();
+    const keys = ['UJI', 'GRU'];
     for (let k = 0; k < keys.length; k++) {
       const code = keys[k];
       const metadata = dataManager.getObject(code);
       p1(`Adding region ${code}...`);
 
-      const region = await repMan.getRegionData(metadata.id);
+      const region = await regions.getRegionData(metadata.id);
 
       if (parseInt(region['metadata']['id']) === 0) {
         p1('Register...');
-        await repMan.registerRegion(metadata.id, Buffer.from(metadata.name), 0, 0, { from: accounts[k % 3] });
+        await regions.registerRegion(metadata.id, Buffer.from(metadata.name), 0, 0, { from: accounts[k % 3] });
         p1('OK. ');
       } else if (region['cellIDs'].length === dataManager.getS2Cells(metadata.code).length) {
         p2('SKIPPED');
@@ -44,7 +47,7 @@ module.exports = async(callback) => {
         const chunk = chunks[c];
         p1(`[${c + 1}/${chunks.length}]...`);
         try {
-          await repMan.addMyTree(
+          await regions.addTree(
             metadata.id,
             chunk.map(x => x.toString()),
             { from: accounts[k % 3] }
@@ -52,7 +55,7 @@ module.exports = async(callback) => {
           p1('OK. ');
         } catch (error) {
           p1(`FAIL (${formatError(error)}). `);
-          failed.push(`addMyTree(${metadata.id}, ${JSON.stringify(chunk.map(x => x.toString()))}, { from: '${accounts[k % 3]}' }). `);
+          failed.push(`regiosn.addTree(${metadata.id}, ${JSON.stringify(chunk.map(x => x.toString()))}, { from: '${accounts[k % 3]}' }). `);
         }
       }
 
@@ -64,8 +67,8 @@ module.exports = async(callback) => {
     const printDeviceRegion = async() => {
       p1('Get device region...');
       try {
-        const device = await repMan.getDeviceFromAddress(accounts[5]);
-        const region = await repMan.query(device['location']);
+        const device = await devices.getDeviceFromAddress(accounts[5]);
+        const region = await regions.query(device['location']);
         if (!parseInt(region['id'])) {
           p2('N/A');
         } else {
@@ -81,8 +84,8 @@ module.exports = async(callback) => {
         for (let k = 0; k < keys.length; k++) {
           const metadata = dataManager.getObject(keys[k]);
           p2(`Get devices in ${metadata.code}...`);
-          const devices = await repMan.getDevicesInRegion(metadata.id);
-          p2(devices.map(device => '  ' + device['addr']).join('\n'));
+          const devicesInRegion = await devices.getDevicesInRegion(metadata.id);
+          p2(devicesInRegion.map(device => '  ' + device['addr']).join('\n'));
         }
       } catch (error) {
         p2(`  FAIL (${formatError(error)})`);
@@ -92,21 +95,25 @@ module.exports = async(callback) => {
     const registerDevice = async(addr, location) => {
       p1(`Registering device ${addr}...`);
       try {
-        const device = await repMan.getDeviceFromAddress(addr);
+        const device = await devices.getDeviceFromAddress(addr);
         if (!device['active']) {
-          await repMan.registerMyDevice(location, 0, 0, [], {from: addr});
+          await devices.registerDevice(location, 0, 0, [], {from: addr});
           p2('OK');
         } else {
           p2('SKIPPED');
         }
       } catch (error) {
         p1(`FAIL (${formatError(error)})`);
-        failed.push(`registerMyDevice('${location}', 0, 0, [], {from: '${addr}'})`);
+        failed.push(`devices.registerDevice('${location}', 0, 0, [], {from: '${addr}'})`);
       }
     };
 
     await registerDevice(accounts[5], toLocation('0d5ffe0c'));
     await registerDevice(accounts[6], toLocation('0d6000d89ef'));
+
+    p2('Device addresses...');
+    const addresses = await devices.getDeviceAddresses();
+    p2(addresses.map(a => '  ' + a).join('\n'));
 
     await printDeviceRegion();
     p2('');
@@ -115,11 +122,11 @@ module.exports = async(callback) => {
     
     p1('Moving device...');
     try {
-      await repMan.updateMyDeviceLocation(toLocation('12a000f71a'), {from: accounts[5]});
+      await devices.updateDeviceLocation(toLocation('12a000f71a'), {from: accounts[5]});
       p2('OK');
     } catch (error) {
       p2(`FAIL (${formatError(error)})`);
-      failed.push(`updateMyDeviceLocation('${toLocation('12a000f71a')}', {from: '${accounts[5]}'})`);
+      failed.push(`updateDeviceLocation('${toLocation('12a000f71a')}', {from: '${accounts[5]}'})`);
     }
     
     await printDeviceRegion();
