@@ -24,7 +24,7 @@ abstract contract Regions {
     address registrar;
     bytes name;
     uint32 ipv4;
-    uint256 ipv6;
+    uint128 ipv6;
   }
 
   Region[] private regions;
@@ -133,7 +133,7 @@ abstract contract Regions {
     regions[uint(index)].failedCellIDs = Utils.substractFromUint64Array(region.failedCellIDs, cellIDs);
   }
 
-  function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint256 ipv6) public {
+  function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint128 ipv6) public {
     Region memory existingRegion = getRegionFromID(id);
     require(existingRegion.metadata.id == 0);
 
@@ -151,7 +151,7 @@ abstract contract Regions {
     regions.push(newRegion);
   }
 
-  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint256 ipv6) public returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
     return addMyRegionCells(id, cellIDs);
   }
@@ -162,7 +162,7 @@ abstract contract Regions {
     regions[uint(index)].metadata.name = newName;
   }
 
-  function updateRegionIPs(uint8 regionID, uint32 ipv4, uint256 ipv6) public {
+  function updateRegionIPs(uint8 regionID, uint32 ipv4, uint128 ipv6) public {
     (Region memory region, int index) = getRegionAndIndexFromID(regionID);
     require(index > -1 && region.metadata.registrar == msg.sender);
 
@@ -230,7 +230,7 @@ abstract contract Regions {
     return addMyRegionCells(id, hashes);
   }
 
-  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint256 ipv6) public returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
     return addMyTree(id, data);
   }

@@ -90,7 +90,7 @@ contract ReputationManagement is S2Regions, Devices {
     return newRegionID;
   }
 
-  function registerMyDevice(uint64 location, uint32 ipv4, uint256 ipv6, uint32[] memory services) public {
+  function registerMyDevice(uint64 location, uint32 ipv4, uint128 ipv6, uint32[] memory services) public {
     registerDevice(msg.sender, 0, ipv4, ipv6, services);
     updateMyDeviceLocation(location);
   }

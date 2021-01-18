@@ -8,7 +8,7 @@ abstract contract Devices {
     uint lastUpdatedEpoch;
     uint64 location;
     uint32 ipv4;
-    uint256 ipv6;
+    uint128 ipv6;
     bool active;
   }
 
@@ -19,7 +19,7 @@ abstract contract Devices {
     return devices[addr];
   }
 
-  function registerDevice(address addr, uint64 location, uint32 ipv4, uint256 ipv6, uint32[] memory services) virtual internal {
+  function registerDevice(address addr, uint64 location, uint32 ipv4, uint128 ipv6, uint32[] memory services) virtual internal {
     Device memory device = devices[addr];
     require(!device.active);
 
@@ -51,7 +51,7 @@ abstract contract Devices {
     devices[addr] = device;
   }
 
-  function updateDevicesIPs(address addr, uint32 ipv4, uint256 ipv6) virtual internal {
+  function updateDevicesIPs(address addr, uint32 ipv4, uint128 ipv6) virtual internal {
     Device memory device = devices[addr];
     require(device.active);
     device.ipv4 = ipv4;
