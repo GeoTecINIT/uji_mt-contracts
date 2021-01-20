@@ -29,13 +29,15 @@ module.exports = async(callback) => {
       }, blockchainNetwork: {
         config: {
           host: '127.0.0.1',
-          port: 18541,
+          port: 8545,
           network_id: 2564,
           address: accounts[0]
         },
         genesis: genesis
       }, api: {
         port: 80
+      }, host: {
+        networkInterface: ''
       }
     };
     
