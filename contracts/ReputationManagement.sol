@@ -25,9 +25,16 @@ contract ReputationManagement {
     return reputations[deviceAddr][regionID].value;
   }
 
+  function getReputation(address deviceAddr) public view returns (uint16 reptuationValue) {
+    uint8 regionID = regionsContract.query(devicesContract.getDeviceFromAddress(deviceAddr).location).id;
+    return getReputation(deviceAddr, regionID);
+  }
+
   function addFeedback(address deviceAddr, uint16 feedback) public {
     uint8 regionID = regionsContract.query(devicesContract.getDeviceFromAddress(deviceAddr).location).id;
     require(regionID > 0);
+    Regions.RegionMetadata memory regionMetadata = regionsContract.getRegionData(regionID).metadata;
+    require(regionMetadata.registrar == msg.sender);
     Reputation memory reputation = reputations[deviceAddr][regionID];
     reputation.value = uint16(
       (

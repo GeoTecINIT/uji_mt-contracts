@@ -36,9 +36,21 @@ module.exports = {
    */
 
   networks: {
+    localNode: {
+      host: '127.0.0.1',
+      port: 8545,
+      network_id: 2564,
+      password: true
+    },
     localNode1: {
       host: '127.0.0.1',
-      port: 18541,
+      port: 18545,
+      network_id: 2564,
+      password: true
+    },
+    localNode2: {
+      host: '127.0.0.1',
+      port: 18546,
       network_id: 2564,
       password: true
     }
