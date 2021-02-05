@@ -108,7 +108,7 @@ module.exports = async(callback) => {
       }
     };
 
-    await registerDevice(accounts[5], toLocation('0d5ffe0c'));
+    await registerDevice(accounts[5], toLocation('0d5ffe0c5e'));
     await registerDevice(accounts[6], toLocation('0d6000d89ef'));
 
     p2('Device addresses...');
@@ -122,11 +122,11 @@ module.exports = async(callback) => {
     
     p1('Moving device...');
     try {
-      await devices.updateDeviceLocation(toLocation('12a000f71a'), {from: accounts[5]});
+      await devices.updateDeviceLocation(toLocation('12a000f71a8f'), {from: accounts[5]});
       p2('OK');
     } catch (error) {
       p2(`FAIL (${formatError(error)})`);
-      failed.push(`updateDeviceLocation('${toLocation('12a000f71a')}', {from: '${accounts[5]}'})`);
+      failed.push(`updateDeviceLocation('${toLocation('12a000f71a8f')}', {from: '${accounts[5]}'})`);
     }
     
     await printDeviceRegion();
