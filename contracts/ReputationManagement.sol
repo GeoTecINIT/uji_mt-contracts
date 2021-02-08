@@ -15,6 +15,11 @@ contract ReputationManagement {
     uint[] timestamps;
   }
 
+  struct DeviceReputation {
+    Devices.Device device;
+    uint64 reputation;
+  }
+
   // RegionID => DeviceAddr => ServiceName => Reputation
   mapping(uint8 => mapping(address => mapping(uint32 => Reputation))) reputations;
 
@@ -40,9 +45,25 @@ contract ReputationManagement {
     return getReputationData(deviceAddr, serviceName).value;
   }
 
-  function updateReputation(address deviceAddr, uint32 serviceName, uint64 reputationValue) public {
-    uint8 regionID = regionsContract.query(devicesContract.getDeviceFromAddress(deviceAddr).location).id;
-    require(regionID > 0);
+  function getInRegionWithService(uint8 regionID, uint32 service) public view returns (DeviceReputation[] memory devicesList) {
+    Devices.Device[] memory devices = devicesContract.getDevicesInRegionWithService(regionID, service);
+    DeviceReputation[] memory results = new DeviceReputation[](devices.length);
+    for (uint i = 0; i < devices.length; i++) {
+      results[i].device = devices[i];
+      results[i].reputation = getReputationValue(regionID, devices[i].addr, service);
+    }
+    return results;
+  }
+
+  function getInSameRegionWithService(uint64 location, uint32 service) public view returns (DeviceReputation[] memory devicesList) {
+    Regions.RegionMetadata memory region = regionsContract.query(location);
+    if (region.id == 0) {
+      return new DeviceReputation[](0);
+    }
+    return getInRegionWithService(region.id, service);
+  }
+
+  function updateReputation(uint8 regionID, address deviceAddr, uint32 serviceName, uint64 reputationValue) public {
     Regions.RegionMetadata memory regionMetadata = regionsContract.getRegionData(regionID).metadata;
     require(regionMetadata.registrar == msg.sender);
 
