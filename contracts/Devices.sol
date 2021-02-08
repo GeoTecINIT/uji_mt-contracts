@@ -87,7 +87,7 @@ contract Devices {
       regionID: 0,
       active: true
     });
-    deviceAddresses.push(msg.sender);
+    deviceAddresses = Utils.pushUniqueToAddressArray(deviceAddresses, msg.sender);
 
     updateDeviceLocation(location);
   }
@@ -122,7 +122,7 @@ contract Devices {
     devices[msg.sender] = device;
   }
 
-  function updateDevicesIPs(uint32 ipv4, uint128 ipv6) public {
+  function updateDeviceIPs(uint32 ipv4, uint128 ipv6) public {
     Device memory device = devices[msg.sender];
     require(device.active);
     device.ipv4 = ipv4;
@@ -134,6 +134,8 @@ contract Devices {
   function deactivateDevice() public {
     deleteDeviceRegion(msg.sender);
     devices[msg.sender].active = false;
+
+    deviceAddresses = Utils.deleteFromAddressArray(deviceAddresses, msg.sender);
   }
 
   function getDevicesFromAddresses(address[] memory addresses) public view returns (Device[] memory devicesList) {

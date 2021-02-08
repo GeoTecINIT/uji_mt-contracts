@@ -10,8 +10,6 @@ const base32ToCellID = base32str => '0x' + Array.from(base32str).map(char => par
   .padEnd(64, '0').match(/.{1,4}/g).map(bin => parseInt(bin, 2).toString(16)).join('');
 const toNumberStr = x => web3utils.toBN(x).toString();
 
-const hexToBin = (hex, len = 64) => Array.from(hex.substr(2)).map(x => parseInt(x, 16).toString(2).padStart(4, '0')).join('').padStart(len, '0');
-
 const testRegistration = (Regions, cells) => {
   it('should be able a region', async() => {
     const regions = await Regions.deployed();
