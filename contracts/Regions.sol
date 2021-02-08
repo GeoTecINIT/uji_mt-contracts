@@ -131,12 +131,12 @@ abstract contract Regions {
     require(index > -1 && region.metadata.registrar == msg.sender);
 
     for (uint i = 0; i < cellIDs.length; i++) {
-      if (getRegionIDFromExactCellID(cellIDs[i]) == id) {
+      if (spaces[cellIDs[i]] == id) {
         spaces[cellIDs[i]] = 0;
       }
     }
 
-    region.failedCellIDs = Utils.substractFromUint64Array(region.failedCellIDs, cellIDs);
+    region.cellIDs = Utils.substractFromUint64Array(region.cellIDs, cellIDs);
     region.lastUpdatedEpoch = block.timestamp;
     regions[uint(index)] = region;
   }
@@ -249,17 +249,5 @@ abstract contract Regions {
     return addTree(id, data);
   }
 
-  function query(uint64 cellID) public virtual view returns (RegionMetadata memory region) {
-    uint64 shiftBit = 0xffffffffffffff00;
-    while (shiftBit > 0) {
-      uint8 regionId = getRegionIDFromExactCellID(cellID);
-      if (regionId > 0) {
-        return getRegionFromID(regionId).metadata;
-      }
-
-      cellID &= shiftBit;
-      shiftBit = shiftBit << LEVEL_LENGTH;
-    }
-    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0});
-  }
+  function query(uint64 cellID) public virtual view returns (RegionMetadata memory region);
 }

@@ -16,7 +16,7 @@ module.exports = () => {
         .split('\n')
         .filter(x => x !== '')
         .map(geohash => Array.from(geohash)
-          .map(char => base32.toNumber(char).toString(2).padStart(8, '0'))
+          .map(char => base32.toNumber(char).toString(2).padStart(5, '0'))
           .join('')
           .padEnd(64, '0')
         ).map(binary => '0x' + parseInt(binary, 2).toString(16))
