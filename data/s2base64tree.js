@@ -7,9 +7,11 @@ const readFile = filePath => fs.readFileSync(filePath)
   .split('\n')
   .filter(x => x);
 
-fs.readdirSync('./data/out/temp')
+const precision = '19';
+
+fs.readdirSync(`./data/out-s2-${precision}/temp`)
   .filter(f => path.extname(f) === '.s2cells-base64')
-  .map(f => `./data/out/temp/${f}`)
+  .map(f => `./data/out-s2-${precision}/temp/${f}`)
   .forEach(filePath => {
     console.log(`Making tree of ${filePath}`);
     const fileNameWithoutExt = path.basename(filePath, '.s2cells-base64');
@@ -18,7 +20,7 @@ fs.readdirSync('./data/out/temp')
     const tree = s2base64tree.makeTree(s2base64arr);
     
     fs.writeFileSync(
-      `./data/out/${fileNameWithoutExt}.s2cells-base64tree`,
+      `./data/out-s2-${precision}/${fileNameWithoutExt}.s2cells-base64tree`,
       Buffer.from(s2base64tree.encoder.encode(tree))
     );
     fs.rmSync(filePath);

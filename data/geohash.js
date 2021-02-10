@@ -3,7 +3,7 @@ const geohashPoly = require('geohash-poly');
 const compressGeohash = require('geohash-compression');
 const geohashTree = require('geohash-tree');
 
-const PRECISION = 6;
+const PRECISION = 8;
 
 const geometryToGeohash = (geometry, precision) => new Promise((resolve, reject) => {
   geohashPoly({coords: geometry.coordinates, precision: precision}, (err, hashes) => {
@@ -15,8 +15,8 @@ const geometryToGeohash = (geometry, precision) => new Promise((resolve, reject)
   });
 });
 
-if (!fs.existsSync('./data/out')) {
-  fs.mkdirSync('./data/out');
+if (!fs.existsSync(`./data/out-geohash-${PRECISION}`)) {
+  fs.mkdirSync(`./data/out-geohash-${PRECISION}`);
 }
 
 const geojson = JSON.parse(fs.readFileSync('./data/regions.geojson'));
@@ -27,8 +27,8 @@ geojson.features.forEach(async(feature) => {
 
   const geohashes = compressGeohash(await geometryToGeohash(feature.geometry, PRECISION));
 
-  fs.writeFileSync(`./data/out/${code}.geohash`, geohashes.join('\n'));
-  fs.writeFileSync(`./data/out/${code}.geohash-tree`, geohashTree.encodeBinary(geohashes, 'buffer'));
+  fs.writeFileSync(`./data/out-geohash-${PRECISION}/${code}.geohash`, geohashes.join('\n'));
+  fs.writeFileSync(`./data/out-geohash-${PRECISION}/${code}.geohash-tree`, geohashTree.encodeBinary(geohashes, 'buffer'));
 });
 
 console.log('FINISHED');

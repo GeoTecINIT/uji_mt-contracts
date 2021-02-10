@@ -1,7 +1,7 @@
 const fs = require('fs');
 const base32 = require('geohash-tree/base32');
 
-module.exports = () => {
+module.exports = (geohashPrecision = 6, s2Precision = 14) => {
   const results = {
     data: {},
     listKeys: function() {
@@ -49,10 +49,10 @@ module.exports = () => {
       id: id, 
       code: code,
       name: name,
-      geohashPath: `./data/out/${code}.geohash`,
-      geohashTreePath: `./data/out/${code}.geohash-tree`,
-      s2CellsPath: `./data/out/${code}.s2cells`,
-      s2Base64TreePath: `./data/out/${code}.s2cells-base64tree`
+      geohashPath: `./data/out-geohash-${geohashPrecision}/${code}.geohash`,
+      geohashTreePath: `./data/out-geohash-${geohashPrecision}/${code}.geohash-tree`,
+      s2CellsPath: `./data/out-s2-${s2Precision}/${code}.s2cells`,
+      s2Base64TreePath: `./data/out-s2-${s2Precision}/${code}.s2cells-base64tree`
     };
   });
 

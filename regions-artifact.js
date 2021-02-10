@@ -1,11 +1,13 @@
 const truffleConfig = require('./truffle-config');
 
-const defaultRegions = 'S2Regions';
+const defaultRegions = 'GeohashRegions';
 
 module.exports = networkName => {
-  const networkConfig = truffleConfig[networkName];
-  if (networkConfig && networkConfig.regionsArtifact) {
-    return artifacts.require(networkConfig.regionsArtifact);
+  if (networkName) {
+    const networkConfig = truffleConfig[networkName];
+    if (networkConfig && networkConfig.regionsArtifact) {
+      return networkConfig.regionsArtifact;
+    }
   }
-  return artifacts.require(defaultRegions);
+  return defaultRegions;
 };
