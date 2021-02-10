@@ -2,7 +2,7 @@ const Migrations = artifacts.require("Migrations");
 const Web3 = require('web3');
 const truffleConfig = require('../truffle-config');
 
-module.exports = function (deployer, networkName) {
+module.exports = async(deployer, networkName) => {
   const networkConfig = truffleConfig.networks[networkName];
   if (networkConfig && networkConfig.password) {
     const passwords = require('../passwords');
@@ -13,5 +13,5 @@ module.exports = function (deployer, networkName) {
     }
   }
 
-  deployer.deploy(Migrations);
+  await deployer.deploy(Migrations);
 };

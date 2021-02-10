@@ -6,6 +6,6 @@ const Utils = artifacts.require('Utils');
 module.exports = async(deployer) => {
   await deployer.deploy(Utils);
   await deployer.link(Utils, S2Regions);
-  await deployer.link(Utils, GeohashRegions);
+  await deployer.link(Utils, GeohashRegions); // for test
   await deployer.link(Utils, Devices);
 };
