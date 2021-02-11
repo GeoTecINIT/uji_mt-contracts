@@ -129,7 +129,6 @@ const geohashCellsAll = new Set(geohashCells.reduce((arr, curr) => [...arr, ...c
 const s2CellsAll = new Set(s2Cells.reduce((arr, curr) => [...arr, ...curr], []));
 const geohashCellsAllArr = Array.from(geohashCellsAll);
 const s2CellsAllArr = Array.from(s2CellsAll);
-const addresses = DATA.devices.subAccounts.map(x => x.address);
 const regionIDs = regionCodes.map(code => dataManger.getObject(code).id);
 
 console.log(`Generating ${devicesCount} devices...`);
@@ -177,6 +176,7 @@ for (let i = 0; i < queryOutTrials; i++) {
   DATA.S2Regions.queryOut.push(cell);
 }
 
+const addresses = DATA.devices.subAccounts.map(x => x.address);
 console.log(`Generating ${reputationCount} reputations...`);
 for (let i = 0; i < reputationCount; i++) {
   DATA.reputations.push({

@@ -13,7 +13,7 @@ module.exports = async(outFn, web3, devices, accounts, locations, movements) => 
     await web3.eth.sendTransaction({
       from: distributorAccount,
       to: accounts[i].address,
-      value: web3Utils.toWei('0.2', 'ether')
+      value: web3Utils.toWei('0.45', 'ether')
     });
 
     const timer = new Date();

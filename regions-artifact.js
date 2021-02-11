@@ -1,6 +1,6 @@
 const truffleConfig = require('./truffle-config');
 
-const defaultRegions = 'GeohashRegions';
+const defaultRegions = 'S2Regions';
 
 module.exports = networkName => {
   if (networkName) {

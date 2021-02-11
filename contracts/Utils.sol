@@ -39,11 +39,22 @@ library Utils {
     return cutUint64Array(cutArray, index);
   }
 
+  function countInAddressArray(address[] memory array, address find) public pure returns (uint count) {
+    count = 0;
+    for (uint i = 0; i < array.length; i++) {
+      if (array[i] == find) {
+        count++;
+      }
+    }
+    return count;
+  }
+
   function deleteFromAddressArray(address[] memory array, address find) public pure returns (address[] memory newArray) {
-    if (array.length == 0) {
+    uint existCount = countInAddressArray(array, find);
+    if (existCount == 0) {
       return array;
     }
-    newArray = new address[](array.length - 1);
+    newArray = new address[](array.length - existCount);
     uint newIdx = 0;
     for (uint i = 0; i < array.length; i++) {
       if (array[i] != find) {

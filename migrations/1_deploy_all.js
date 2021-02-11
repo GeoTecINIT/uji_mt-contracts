@@ -7,8 +7,6 @@ const Web3 = require('web3');
 const truffleConfig = require('../truffle-config');
 
 module.exports = async(deployer, networkName) => {
-  const Regions = artifacts.require(require('../regions-artifact')(networkName));
-
   const networkConfig = truffleConfig.networks[networkName];
   if (networkConfig && networkConfig.password) {
     const passwords = require('../passwords');
@@ -26,14 +24,14 @@ module.exports = async(deployer, networkName) => {
   // FOR TESTING (uncomment for truffle test)
   // const S2Regions = artifacts.require('S2Regions');
   // const GeohashRegions = artifacts.require('GeohashRegions');
+  // const Regions = S2Regions;
   // await deployer.link(Utils, [S2Regions, GeohashRegions, Devices]);
-  // const S2Regions = artifacts.require('S2Regions');
-  // const GeohashRegions = artifacts.require('GeohashRegions');
   // await deployer.deploy(S2Regions);
   // await deployer.deploy(GeohashRegions);
   // await deployer.link(Regions, Devices);
   // ---------------------------------------------
   // FOR DEPLOYMENT (uncomment for truffle deploy/migrate)
+  const Regions = artifacts.require(require('../regions-artifact')(networkName));
   await deployer.link(Utils, [Regions, Devices]);
   await deployer.deploy(Regions);
   await deployer.link(Regions, Devices);

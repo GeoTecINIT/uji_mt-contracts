@@ -203,7 +203,7 @@ abstract contract Regions {
     int deep = 0;
     uint8 OPEN_CLOSE_BYTE = OPEN_BYTE | CLOSE_BYTE;
     for (uint i = 0; i < data.length; i++) {
-      require(deep > -1 && deep < 8);
+      require(deep < 9);
 
       if ((data[i] & OPEN_BYTE) > 0) {
         deep++;
@@ -237,7 +237,6 @@ abstract contract Regions {
       }
     }
   }
-
 
   function addTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
     uint64[] memory hashes = expandTree(data);
