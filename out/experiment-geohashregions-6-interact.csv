@@ -1,5 +1,5 @@
 action,attribute,txGas,blockGas,time
-Regions.removeRegionCells,id=2,length=3,6721975,65498,720
+Regions.removeRegionCells,id=2;length=3,6721975,65498,720
 Regions.updateRegionIPs,1,6721975,144712,606
 Regions.query,1,,,140
 Regions.query,2,,,127

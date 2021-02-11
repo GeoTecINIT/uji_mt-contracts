@@ -5,7 +5,7 @@ module.exports = async(optFn, regions, regionsArtifactData, updateData, idx) => 
   const removingCellIDs = regionsArtifactData.removeCells.cellIDs[idx];
   timer = new Date();
   result = await regions.removeRegionCells(regionsArtifactData.removeCells.regionID, removingCellIDs);
-  await optFn('Regions.removeRegionCells', `id=${regionsArtifactData.removeCells.regionID},length=${removingCellIDs.length}`, result.tx, timer);
+  await optFn('Regions.removeRegionCells', `id=${regionsArtifactData.removeCells.regionID};length=${removingCellIDs.length}`, result.tx, timer);
 
   console.log('Rolling back...');
   await regions.addRegionCells(regionsArtifactData.removeCells.regionID, removingCellIDs);
