@@ -1,0 +1,7 @@
+action,attribute,txGas,blockGas,time
+Regions.registerRegion,1,6721975,137979,3456
+Regions.addTree,id=1;size=127,6721975,4490309,11198
+Regions.addTree,id=1;size=127,6721975,4727046,17678
+Regions.addTree,id=1;size=127,6721975,5242059,24326
+Regions.addTree,id=1;size=127,6721975,5687638,30845
+Regions.addTree,id=1;size=127,6721975,6629196,40007

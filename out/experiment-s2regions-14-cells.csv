@@ -1,0 +1,17 @@
+action,attribute,txGas,blockGas,time
+Regions.registerRegion,1,6721975,137979,4040
+Regions.addRegionCells,id=1;length=57,6721975,1965406,5755
+Regions.registerRegion,2,6721975,125827,528
+Regions.addRegionCells,id=2;length=9,6721975,406480,1536
+Regions.registerRegion,3,6721975,128651,581
+Regions.addRegionCells,id=3;length=17,6721975,673636,1853
+Regions.registerRegion,4,6721975,171794,683
+Regions.addRegionCells,id=4;length=11,6721975,493656,1524
+Regions.registerRegion,5,6721975,134143,462
+Regions.addRegionCells,id=5;length=19,6721975,767286,2792
+Regions.registerRegion,6,6721975,136919,561
+Regions.addRegionCells,id=6;length=23,6721975,910287,2609
+Regions.registerRegion,7,6721975,139467,512
+Regions.addRegionCells,id=7;length=29,6721975,1095513,3568
+Regions.registerRegion,8,6721975,142231,682
+Regions.addRegionCells,id=8;length=29,6721975,1108003,3844

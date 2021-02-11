@@ -224,6 +224,5 @@ package-lock.json
 
 passwords.js
 
-out/*
-data/out/*
 network/node*
+out/api-config.json

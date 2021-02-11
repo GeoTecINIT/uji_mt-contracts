@@ -1,0 +1,6 @@
+action,attribute,txGas,blockGas,time
+Devices.registerDevice,,6721975,557287,1325
+Devices.updateDeviceLocation,same,6721975,556163,896
+Devices.updateDeviceLocation,different,6721975,478560,1010
+Devices.updateDeviceServices,,6721975,70327,611
+Devices.updateDeviceIPs,,6721975,69153,519
