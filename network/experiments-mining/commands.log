@@ -31,9 +31,11 @@ WIN-GETH002> miner.stop();
 WIN004> rm -r -Force ./data/geth
 WIN005> rm -r -Force ./data/history
 RPI004> rm -rf ./data/geth/ ./data/history
-WIN006> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+WIN006> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+RPI005> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+WIN007> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
   --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
-RPI005> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+RPI006> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
   --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
   --bootnodes {{ENODE}} \
   console
@@ -42,26 +44,28 @@ WIN-GETH003> console.log(Math.round(new Date().getTime() / 1000)); miner.start({
 WIN-GETH004> miner.stop();
 
 # Pi Mining with PC nodes
-WIN007> rm -r -Force ./data/geth
-WIN008> rm -r -Force ./data/history
-RPI006> rm -rf ./data/geth/ ./data/history
-RPI007> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+WIN008> rm -r -Force ./data/geth
+WIN009> rm -r -Force ./data/history
+RPI007> rm -rf ./data/geth/ ./data/history
+WIN010> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+RPI008> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+RPI009> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
   --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
-WIN009> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
-  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
-  --bootnodes {{ENODE}} \
+WIN011> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner `
+  --bootnodes {{ENODE}} `
   console
-RPI-GETH001> console.log(Math.round(new Date().getTime() / 1000)); miner.start({{THREAD_NUMBER}});
+RPI-GETH001> console.log(Math.round(new Date().getTime() / 1000)); miner.start(1);
 ## Wait for mining
 RPI-GETH002> miner.stop();
 
 # Both mines
-WIN010> rm -r -Force ./data/geth
-WIN011> rm -r -Force ./data/history
-RPI008> rm -rf ./data/geth/ ./data/history
-WIN012> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+WIN012> rm -r -Force ./data/geth
+WIN013> rm -r -Force ./data/history
+RPI010> rm -rf ./data/geth/ ./data/history
+WIN014> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
   --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
-RPI009> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+RPI011> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
   --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
   --bootnodes {{ENODE}} \
   console
