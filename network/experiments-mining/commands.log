@@ -1,0 +1,72 @@
+# COMMANDS FOR MINING EXPERIMENTS
+# WIN - command from Windows (based on PowerShell script)
+# RPI - command from Raspberry PI (based on bash shell script)
+
+## ------ ##
+
+# Clear all data file before new experiments
+WIN000> rm -r -Force ./data
+RPI000> rm -rf ./data
+
+# PC Mining with Pi to be node
+WIN001> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+WIN002> geth --datadir ./data --networkid 3000 --nousb account new
+RPI001> geth --datadir ./data --networkid 3000 --nousb init ./genesis.json
+RPI002> geth --datadir ./data --networkid 3000 --nousb account new
+WIN003> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
+RPI003> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
+  --bootnodes {{ENODE}} \
+  console
+## ↑ argument --bootnodes is derived from "INFO Started P2P networkin self=..." log from command WIN003
+##      ※ IMPORTANT: to change "@127.0.0.1:30303" to be windows ip address
+WIN-GETH001> console.log(Math.round(new Date().getTime() / 1000)); miner.start(1);
+## ↑ Note starting time of mining (result from console.log) in note.json file
+## ↑ Change parameter in miner.start(...) to be desired number of thread (1~4)
+## Wait for mining
+WIN-GETH002> miner.stop();
+
+# Start new experiment of different thread number (clear data but keep accounts)
+WIN004> rm -r -Force ./data/geth
+WIN005> rm -r -Force ./data/history
+RPI004> rm -rf ./data/geth/ ./data/history
+WIN006> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
+RPI005> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
+  --bootnodes {{ENODE}} \
+  console
+WIN-GETH003> console.log(Math.round(new Date().getTime() / 1000)); miner.start({{THREAD_NUMBER}});
+## Wait for mining
+WIN-GETH004> miner.stop();
+
+# Pi Mining with PC nodes
+WIN007> rm -r -Force ./data/geth
+WIN008> rm -r -Force ./data/history
+RPI006> rm -rf ./data/geth/ ./data/history
+RPI007> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
+WIN009> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
+  --bootnodes {{ENODE}} \
+  console
+RPI-GETH001> console.log(Math.round(new Date().getTime() / 1000)); miner.start({{THREAD_NUMBER}});
+## Wait for mining
+RPI-GETH002> miner.stop();
+
+# Both mines
+WIN010> rm -r -Force ./data/geth
+WIN011> rm -r -Force ./data/history
+RPI008> rm -rf ./data/geth/ ./data/history
+WIN012> geth --datadir ./data --networkid 3000 --nousb --port 30303 `
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner console
+RPI009> geth --datadir ./data --networkid 3000 --nousb --port 30303 \
+  --http --http.port 8545 --http.api eth,web3,personal,net,admin,miner \
+  --bootnodes {{ENODE}} \
+  console
+RPI-GETH003> console.log(Math.round(new Date().getTime() / 1000)); miner.start(1);
+WIN-GETH005> console.log(Math.round(new Date().getTime() / 1000)); miner.start(1);
+## If possible, run RPI-GETH003 and WIN-GETH005 at the same time
+RPI-GETH004> miner.stop();
+WIN-GETH006> miner.stop();
