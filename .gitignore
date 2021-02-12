@@ -226,3 +226,4 @@ passwords.js
 
 network/node*
 out/api-config.json
+network/experiments-mining/data
