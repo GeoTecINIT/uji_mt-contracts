@@ -1,7 +1,15 @@
+/**
+ * This script runs an experiment for thesis report.
+ * Change values in the capitalised variables to run an experiment on each factors.
+ * This script should be run in `truffle exec` command.
+ */
 const REGIONS_ARTIFACT = 'GeohashRegions'; // GeohashRegions|S2Regions
 const PRECISION_INDEX = 0; // 0|1|2
 const ADD_MODE = 'cells'; // cells|tree
 
+// ---
+
+// Load contracts and libraries
 const Regions = artifacts.require(REGIONS_ARTIFACT);
 const Devices = artifacts.require('Devices');
 const ReputationManagement = artifacts.require('ReputationManagement');
@@ -10,6 +18,7 @@ const Web3 = require('web3');
 const web3Utils = require('web3-utils');
 const fs = require('fs');
 
+// Mapping of PRECISION_INDEX to precision in each geocoding technique
 const precisions = {
   GeohashRegions: [6, 7, 8],
   S2Regions: [14, 17, 19]
@@ -24,10 +33,26 @@ module.exports = async(callback) => {
     const web3 = new Web3('http://127.0.0.1:9545/');
     const accounts = await web3.eth.getAccounts();
   
-    const headers = ['action', 'attribute', 'txGas', 'blockGas', 'time'];
+    const headers = ['action', 'attribute', 'txGas', 'blockGas', 'time']; // csv header
+
+    /**
+     * Function to write a row into a csv file
+     * @param {string} file Destination file path
+     * @param {string[]} row Data in one row
+     * @param {function} fn Function to write file (fs.writeFileSync|fs.appendFileSync), later is the default
+     */
     const toFile = (file, row, fn = fs.appendFileSync) => {
       fn(file, row.join(',') + '\n');
     };
+
+    /**
+     * Function to write an action info into a csv file
+     * @param {string} file Destination file path
+     * @param {string} action Action column value
+     * @param {string} attr Attribute column value
+     * @param {string} txHash Transaction hash
+     * @param {number} timer Start timestamp of the action, to measure the calculation time
+     */
     const addStat = async(file, action, attr, txHash = 0, timer = null) => {
       let time = '';
       if (timer) {
@@ -62,6 +87,7 @@ module.exports = async(callback) => {
     const devices = await Devices.deployed();
     const reputationManagement = await ReputationManagement.deployed();
 
+    // Run experiments
     await require('./experiments/regions-add')(createOptFn(FILE_REGIONS), regions, regionsArtifactData, PRECISION_INDEX, ADD_MODE);
     await require('./experiments/regions-interact')(createOptFn(FILE_REGIONS_INTERACT), regions, regionsArtifactData, inputData.regions, PRECISION_INDEX);
     await require('./experiments/regions-devices')(createOptFn(FILE_REGIONS_DEVICES), devices, regionsArtifactData, inputData.devices, accounts[1]);

@@ -3,6 +3,7 @@ const web3Utils = require('web3-utils');
 module.exports = async(outFn, web3, devices, accounts, locations, movements) => {
   const distributorAccount = (await web3.eth.getAccounts())[9];
 
+  // Measure device registration
   console.log(`== Devices Bulk ==`);
   console.log(`Total: ${accounts.length}`);
   for (let i = 0; i < accounts.length; i++) {
@@ -21,6 +22,7 @@ module.exports = async(outFn, web3, devices, accounts, locations, movements) => 
     outFn('devices.registerDevice', '', result.tx, timer);
   }
 
+  // Measure device movement
   console.log(`== Devices Move ==`);
   console.log(`Total: ${movements.length}`);
   for (let i = 0; i < movements.length; i++) {

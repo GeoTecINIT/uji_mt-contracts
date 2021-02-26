@@ -1,3 +1,7 @@
+/**
+ * Create geohash cells and trees from `regions.geojson` and write data files from the data.
+ * Change variable `PRECISION` for desired geohash level.
+ */
 const fs = require('fs');
 const geohashPoly = require('geohash-poly');
 const compressGeohash = require('geohash-compression');

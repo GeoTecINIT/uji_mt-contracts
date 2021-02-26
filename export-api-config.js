@@ -1,3 +1,8 @@
+/**
+ * Script to export the API config of the current deployed Smart Contracts in the network into json file.
+ * The output file will be located at ./out/api-config.json, which is needed by the fog API.
+ * This script should be run in `truffle exec` command.
+ */
 const fs = require('fs');
 
 const S2Regions = artifacts.require('S2Regions');

@@ -1,3 +1,8 @@
+/**
+ * This migration is only for gas consumption measurement.
+ * use `truffle deploy/migrate --f 0 --to 1` to reproduce the experiment.
+ * to skip this migration use `truffle deploy/migrate --f 1`
+ */
 const Migrations = artifacts.require('Migrations');
 const Utils = artifacts.require('Utils');
 const GeohashRegions = artifacts.require('GeohashRegions');

@@ -1,3 +1,6 @@
+/**
+ * Load S2 base64 cells derived from Golang and create trees from the data.
+ */
 const fs = require('fs');
 const path = require('path');
 const s2base64tree = require('s2base64tree');

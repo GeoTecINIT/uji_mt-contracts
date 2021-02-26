@@ -1,3 +1,6 @@
+/**
+ * Export utility functions to read experiment data with original in `regions.geojson` file.
+ */
 const fs = require('fs');
 const base32 = require('geohash-tree/base32');
 

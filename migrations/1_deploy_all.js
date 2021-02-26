@@ -21,7 +21,7 @@ module.exports = async(deployer, networkName) => {
   await deployer.deploy(Utils);
 
   // ---------------------------------------------
-  // FOR TESTING (uncomment for truffle test)
+  // FOR TESTING (uncomment for `truffle test`)
   // const S2Regions = artifacts.require('S2Regions');
   // const GeohashRegions = artifacts.require('GeohashRegions');
   // const Regions = S2Regions;
@@ -30,7 +30,7 @@ module.exports = async(deployer, networkName) => {
   // await deployer.deploy(GeohashRegions);
   // await deployer.link(Regions, Devices);
   // ---------------------------------------------
-  // FOR DEPLOYMENT (uncomment for truffle deploy/migrate)
+  // FOR DEPLOYMENT (uncomment for `truffle deploy/migrate --f 1`)
   const Regions = artifacts.require(require('../regions-artifact')(networkName));
   await deployer.link(Utils, [Regions, Devices]);
   await deployer.deploy(Regions);

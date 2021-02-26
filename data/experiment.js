@@ -1,3 +1,7 @@
+/**
+ * Produce a random data for the experiment.
+ * The output is located in `./out/experiment-data.json` which is imported by `../experiments.js` script.
+ */
 const fs = require('fs');
 const Web3 = require('web3');
 const geohashTree = require('geohash-tree');
@@ -6,6 +10,8 @@ const base32 = require('geohash-tree/base32');
 
 const dataManagerFn = require('./data-manager');
 const dataManagerMain = dataManagerFn();
+
+// Utils functions
 
 const chunkArray = (array, length = 64) => {
   const arr = array.map(x => x);
@@ -19,6 +25,18 @@ const chunkArray = (array, length = 64) => {
 const hexToCellID = hexWithPrefix => hexWithPrefix.padEnd(18, '0');
 const base32ToCellID = base32str => '0x' + Array.from(base32str).map(char => parseInt(base32.toNumber(char)).toString(2).padStart(5, '0')).join('')
   .padEnd(64, '0').match(/.{1,4}/g).map(bin => parseInt(bin, 2).toString(16)).join('');
+
+const randomBytes = len => {
+  const bytes = [];
+  for (let i = 0; i < len; i++) {
+    bytes.push(Math.round(Math.random() * 255));
+  }
+  return '0x' + bytes.map(x => x.toString(16).padStart(2, '0')).join('');
+};
+
+const randomArrayMember = array => array[Math.round(Math.random() * (array.length - 1))];
+
+// Data structure
 
 const DATA = {
   GeohashRegions: {
@@ -77,15 +95,7 @@ const DATA = {
   reputationQueries: []
 };
 
-const randomBytes = len => {
-  const bytes = [];
-  for (let i = 0; i < len; i++) {
-    bytes.push(Math.round(Math.random() * 255));
-  }
-  return '0x' + bytes.map(x => x.toString(16).padStart(2, '0')).join('');
-};
-
-const randomArrayMember = array => array[Math.round(Math.random() * (array.length - 1))];
+// Data generation
 
 const web3 = new Web3('http://127.0.0.1:9545/');
 
@@ -96,6 +106,7 @@ const precisions = [
 ];
 const regionCodes = dataManagerMain.listKeys();
 
+//// Regions for adding to contract, cells and trees
 let precisionIndex = 0;
 for (let precision of precisions) {
   console.log(`Reading regions precision geohash = ${precision.geohash}, s2 = ${precision.s2}...`)
@@ -115,6 +126,7 @@ for (let precision of precisions) {
   precisionIndex++;
 }
 
+//// Random count
 const devicesCount = 200;
 const movement = 100;
 const queryTrials = 5000;
@@ -122,6 +134,7 @@ const queryOutTrials = 1000;
 const reputationCount = 500;
 const reputationQueryTrials = 1000;
 
+//// Full set for random
 const dataManger = dataManagerFn(8, 19);
 const geohashCells = regionCodes.map(code => dataManger.getGeohash(code));
 const s2Cells = regionCodes.map(code => dataManger.getS2Cells(code));
@@ -131,6 +144,7 @@ const geohashCellsAllArr = Array.from(geohashCellsAll);
 const s2CellsAllArr = Array.from(s2CellsAll);
 const regionIDs = regionCodes.map(code => dataManger.getObject(code).id);
 
+//// Random devices data
 console.log(`Generating ${devicesCount} devices...`);
 for (let i = 0; i < devicesCount; i++) {
   const account = web3.eth.accounts.privateKeyToAccount(randomBytes(32));
@@ -139,6 +153,7 @@ for (let i = 0; i < devicesCount; i++) {
   DATA.S2Regions.subLocations.push(randomArrayMember(s2Cells[i % regionCodes.length]));
 }
 
+//// Random devices movement data
 console.log(`Generating ${movement} random movement...`);
 for (let i = 0; i < movement; i++) {
   DATA.GeohashRegions.deviceMovements.push({
@@ -151,6 +166,7 @@ for (let i = 0; i < movement; i++) {
   });
 }
 
+//// Random region query test case: within
 console.log(`Generating ${queryTrials} query test cases...`);
 for (let i = 0; i < queryTrials; i++) {
   const regionIndex = i % regionCodes.length;
@@ -158,6 +174,7 @@ for (let i = 0; i < queryTrials; i++) {
   DATA.S2Regions.query.push(randomArrayMember(s2Cells[regionIndex]));
 }
 
+//// Random region query test case: outside
 console.log(`Generating ${queryOutTrials} query out-of-region test cases...`);
 for (let i = 0; i < queryOutTrials; i++) {
   let cell;
@@ -176,6 +193,7 @@ for (let i = 0; i < queryOutTrials; i++) {
   DATA.S2Regions.queryOut.push(cell);
 }
 
+//// Random reputation valuess
 const addresses = DATA.devices.subAccounts.map(x => x.address);
 console.log(`Generating ${reputationCount} reputations...`);
 for (let i = 0; i < reputationCount; i++) {
@@ -187,6 +205,7 @@ for (let i = 0; i < reputationCount; i++) {
   });
 }
 
+//// Random reputation query values
 console.log(`Generating ${reputationQueryTrials} random reputation query...`);
 for (let i = 0; i < reputationQueryTrials; i++) {
   if (Math.random() > 0.8) {
@@ -203,6 +222,7 @@ for (let i = 0; i < reputationQueryTrials; i++) {
   }
 }
 
+//// Write data
 if (!fs.existsSync('./data/out')) {
   fs.mkdirSync('./data/out');
 }

@@ -1,5 +1,7 @@
 package main
 
+// Create S2 cells from given geojson
+
 import (
 	"fmt"
 	"os"

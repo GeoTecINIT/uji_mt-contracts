@@ -5,11 +5,13 @@ module.exports = async(optFn, regions, regionsArtifactData, idx, mode) => {
   for (let region of regionsArtifactData.regions[idx]) {
     console.log(`=== Region ${region.id} - ${region.code} ===`);
 
+    // Measure region registration
     console.log('  Registering...');
     timer = new Date();
     result = await regions.registerRegion(region.id, web3Utils.stringToHex(region.name), 0, 0);
     await optFn('Regions.registerRegion', region.id, result.tx, timer);
 
+    // Measure adding cells to a region through either cells or tree
     if (mode === 'cells') {
       for (let i = 0; i < region.cells.length; i++) {
         console.log(`  Adding cells chunk ${i + 1} from ${region.cells.length}...`);

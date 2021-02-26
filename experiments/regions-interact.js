@@ -16,6 +16,7 @@ module.exports = async(optFn, regions, regionsArtifactData, updateData, idx) => 
   result = await regions.updateRegionIPs(updateIP.regionID, updateIP.ipv4, updateIP.ipv6);
   await optFn('Regions.updateRegionIPs', updateIP.regionID, result.tx, timer);
 
+  // Measure region query time
   console.log('Test query...');
   const cellIDs = [...regionsArtifactData.query, ...regionsArtifactData.queryOut];
   console.log(`    ${cellIDs.length} cases`);
