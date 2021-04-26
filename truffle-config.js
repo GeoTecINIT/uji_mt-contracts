@@ -44,13 +44,13 @@ module.exports = {
     },
     localNode1: {
       host: '127.0.0.1',
-      port: 18545,
+      port: 18541,
       network_id: 2564,
       password: true
     },
     localNode2: {
       host: '127.0.0.1',
-      port: 18546,
+      port: 18542,
       network_id: 2564,
       password: true
     }
