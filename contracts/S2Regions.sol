@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import './Regions.sol';
+import './RegionsCells.sol';
 
-contract S2Regions is Regions {
-  constructor() Regions(
+contract S2Regions is RegionsCells {
+  constructor() RegionsCells(
     0x40, // open byte:   01?? ????
     0x80, // close byte:  1000 0000
     2,    // level length:        2

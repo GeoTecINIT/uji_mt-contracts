@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import './Regions.sol';
 import './Devices.sol';
 
 contract ReputationManagement {
   Devices private devicesContract;
-  Regions private regionsContract;
+  RegionsCells private regionsContract;
 
   struct Reputation {
     uint64 value; // 0x0 to 0xfffffffffffffffff
@@ -25,7 +24,7 @@ contract ReputationManagement {
 
   constructor(address devicesContractAddress) {
     devicesContract = Devices(devicesContractAddress);
-    regionsContract = Regions(devicesContract.getRegionsContractAddress());
+    regionsContract = RegionsCells(devicesContract.getRegionsContractAddress());
   }
 
   function getReputationData(uint8 regionID, address deviceAddr, uint32 serviceName) public view returns (Reputation memory reputation) {
