@@ -1,4 +1,4 @@
-const S2Regions = artifacts.require('S2Regions');
+const S2RegionsCells = artifacts.require('S2RegionsCells');
 const Devices = artifacts.require('Devices');
 const ReputationManagement = artifacts.require('ReputationManagement');
 
@@ -14,7 +14,7 @@ contract('ReputationManagement', accounts => {
   const gruID = dataManager.getObject('GRU').id;
 
   before(async() => {
-    const regions = await S2Regions.deployed();
+    const regions = await S2RegionsCells.deployed();
     const devices = await Devices.deployed();
 
     const addingRegions = ['UJI', 'GRU'];

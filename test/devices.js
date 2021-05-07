@@ -1,4 +1,4 @@
-const S2Regions = artifacts.require('S2Regions');
+const S2RegionsCells = artifacts.require('S2RegionsCells');
 const Devices = artifacts.require('Devices');
 
 const web3Utils = require('web3-utils');
@@ -13,7 +13,7 @@ contract('Devices', accounts => {
   const CPCid = dataManager.getObject('CPC').id.toString();
 
   before(async() => {
-    const regions = await S2Regions.deployed();
+    const regions = await S2RegionsCells.deployed();
     const regionsToAdd = ['UJI', 'GRU', 'CPC'];
     for (let i = 0; i < regionsToAdd.length; i++) {
       const metadata = dataManager.getObject(regionsToAdd[i]);

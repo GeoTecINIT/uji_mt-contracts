@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 import './RegionsCells.sol';
 
-contract GeohashRegions is RegionsCells {
+contract GeohashRegionsCells is RegionsCells {
   constructor() RegionsCells(
     0x20, // open byte:   001? ????
     0x40, // close byte:  0100 0000

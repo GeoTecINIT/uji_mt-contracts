@@ -3,7 +3,7 @@ pragma solidity >=0.4.22 <0.9.0;
 
 import './RegionsCells.sol';
 
-contract S2Regions is RegionsCells {
+contract S2RegionsCells is RegionsCells {
   constructor() RegionsCells(
     0x40, // open byte:   01?? ????
     0x80, // close byte:  1000 0000

@@ -22,19 +22,19 @@ module.exports = async(deployer, networkName) => {
 
   // ---------------------------------------------
   // FOR TESTING (uncomment for `truffle test`)
-  // const S2Regions = artifacts.require('S2Regions');
-  // const GeohashRegions = artifacts.require('GeohashRegions');
-  // const Regions = S2Regions;
-  // await deployer.link(Utils, [S2Regions, GeohashRegions, Devices]);
-  // await deployer.deploy(S2Regions);
-  // await deployer.deploy(GeohashRegions);
-  // await deployer.link(Regions, Devices);
+  const S2RegionsCells = artifacts.require('S2RegionsCells');
+  const GeohashRegionsCells = artifacts.require('GeohashRegionsCells');
+  const Regions = S2RegionsCells;
+  await deployer.link(Utils, [S2RegionsCells, GeohashRegionsCells, Devices]);
+  await deployer.deploy(S2RegionsCells);
+  await deployer.deploy(GeohashRegionsCells);
+  await deployer.link(Regions, Devices);
   // ---------------------------------------------
   // FOR DEPLOYMENT (uncomment for `truffle deploy/migrate --f 1`)
-  const Regions = artifacts.require(require('../regions-artifact')(networkName));
-  await deployer.link(Utils, [Regions, Devices]);
-  await deployer.deploy(Regions);
-  await deployer.link(Regions, Devices);
+  // const Regions = artifacts.require(require('../regions-artifact')(networkName));
+  // await deployer.link(Utils, [Regions, Devices]);
+  // await deployer.deploy(Regions);
+  // await deployer.link(Regions, Devices);
   // ---------------------------------------------
 
   const regions = await Regions.deployed();
