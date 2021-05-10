@@ -1,5 +1,7 @@
 const GeohashCellsRegions = artifacts.require('GeohashCellsRegions');
 const S2CellsRegions = artifacts.require('S2CellsRegions');
+const GeohashTreeRegions = artifacts.require('GeohashTreeRegions');
+const S2TreeRegions = artifacts.require('S2TreeRegions');
 const web3utils = require('web3-utils');
 const base32 = require('geohash-tree/base32');
 const dataManager = require('../data/data-manager')();
@@ -10,7 +12,7 @@ const base32ToCellID = base32str => '0x' + Array.from(base32str).map(char => par
   .padEnd(64, '0').match(/.{1,4}/g).map(bin => parseInt(bin, 2).toString(16)).join('');
 const toNumberStr = x => web3utils.toBN(x).toString();
 
-const testRegistration = (Regions, cells) => {
+const testRegistration = (Regions, cells, checkCells = true) => {
   it('should be able a region', async() => {
     const regions = await Regions.deployed();
 
@@ -40,26 +42,38 @@ const testRegistration = (Regions, cells) => {
   });
 
   it('should be able to add cells', async() => {
-    const regions = await Regions.deployed();
-
-    await regions.addRegionCells(1, cells);
-
-    const regionData = await regions.getRegionData(1);
-    expect(regionData['metadata']['id']).to.equal('1');
-    expect(regionData['cellIDs'].length).to.equal(cells.length);
-    expect(regionData['cellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+    if (checkCells) {
+      const regions = await Regions.deployed();
+  
+      await regions.addRegionCells(1, cells);
+  
+      const regionData = await regions.getRegionData(1);
+      expect(regionData['metadata']['id']).to.equal('1');
+      expect(regionData['cellIDs'].length).to.equal(cells.length);
+      expect(regionData['cellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+    } else {
+      expect(true).to.be.true;
+    }
   });
 };
-contract('GeohashRegions (Test Registration and Adding)', () => {
+contract('GeohashCellsRegions (Test Registration and Adding)', () => {
   const cells = dataManager.getGeohash('UJI');
   testRegistration(GeohashCellsRegions, cells);
 });
-contract('S2Regions (Test Registration and Adding Cells)', () => {
+contract('S2CellsRegions (Test Registration and Adding Cells)', () => {
   const cells = dataManager.getS2Cells('UJI');
   testRegistration(S2CellsRegions, cells);
 });
+contract('GeohashTreeRegions (Test Registration and Adding)', () => {
+  const cells = dataManager.getGeohash('UJI');
+  testRegistration(GeohashTreeRegions, cells, false);
+});
+contract('S2TreeRegions (Test Registration and Adding Cells)', () => {
+  const cells = dataManager.getS2Cells('UJI');
+  testRegistration(S2TreeRegions, cells, false);
+});
 
-const testTree = (Regions, tree, cells) => {
+const testTree = (Regions, tree, cells, checkCells = true) => {
   it('should be able to add tree', async() => {
     const regions = await Regions.deployed();
     await regions.registerRegion(1, strToHex('Region 1'), 0, 0);
@@ -67,20 +81,34 @@ const testTree = (Regions, tree, cells) => {
     await regions.addTree(1, tree);
 
     const regionData = await regions.getRegionData(1);
-    expect(regionData['metadata']['id']).to.equal('1');
-    expect(regionData['cellIDs'].length).to.equal(cells.length);
-    expect(regionData['cellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+    if (checkCells) {
+      expect(regionData['metadata']['id']).to.equal('1');
+      expect(regionData['cellIDs'].length).to.equal(cells.length);
+      expect(regionData['cellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+    } else {
+      expect(parseInt(regionData['cellsLength'])).to.equal(cells.length);
+    }
   });
 };
-contract('GeohashRegions (Test Tree)', () => {
+contract('GeohashCellsRegions (Test Tree)', () => {
   const tree = Array.from(dataManager.getGeohashTree('UJI'));
   const cells = dataManager.getGeohash('UJI');
   testTree(GeohashCellsRegions, tree, cells);
 });
-contract('S2Regions (Test Tree)', () => {
+contract('S2CellsRegions (Test Tree)', () => {
   const tree = Array.from(dataManager.getS2Base64Tree('UJI'));
   const cells = dataManager.getS2Cells('UJI');
   testTree(S2CellsRegions, tree, cells);
+});
+contract('GeohashTreeRegions (Test Tree)', () => {
+  const tree = Array.from(dataManager.getGeohashTree('UJI'));
+  const cells = dataManager.getGeohash('UJI');
+  testTree(GeohashTreeRegions, tree, cells, false);
+});
+contract('S2TreeRegions (Test Tree)', () => {
+  const tree = Array.from(dataManager.getS2Base64Tree('UJI'));
+  const cells = dataManager.getS2Cells('UJI');
+  testTree(S2TreeRegions, tree, cells, false);
 });
 
 const testAdvancedRegistration = (acc1, acc2, Regions, cells, deleteCount) => {
@@ -159,11 +187,11 @@ const testAdvancedRegistration = (acc1, acc2, Regions, cells, deleteCount) => {
     expect(regionData2['cellIDs']).to.have.members(removingCells.map(x => toNumberStr(x)));
   });
 };
-contract('GeohashRegions (Test Registration 2)', accounts => {
+contract('GeohashCellsRegions (Test Registration 2)', accounts => {
   const cells = dataManager.getGeohash('UJI');
   testAdvancedRegistration(accounts[0], accounts[1], GeohashCellsRegions, cells, 2);
 });
-contract('S2Regions (Test Registration 2)', accounts => {
+contract('S2CellsRegions (Test Registration 2)', accounts => {
   const cells = dataManager.getS2Cells('UJI');
   testAdvancedRegistration(accounts[0], accounts[1], S2CellsRegions, cells, 4);
 });
@@ -218,11 +246,17 @@ const testUpdatingData = (acc1, acc2, Regions) => {
     }
   });
 };
-contract('GeohashRegions (Test Updating Data)', accounts => {
+contract('GeohashCellsRegions (Test Updating Data)', accounts => {
   testUpdatingData(accounts[0], accounts[1], GeohashCellsRegions);
 });
-contract('S2Regions (Test Updating Data)', accounts => {
+contract('S2CellsRegions (Test Updating Data)', accounts => {
   testUpdatingData(accounts[0], accounts[1], S2CellsRegions);
+});
+contract('GeohashTreeRegions (Test Updating Data)', accounts => {
+  testUpdatingData(accounts[0], accounts[1], GeohashTreeRegions);
+});
+contract('S2TreeRegions (Test Updating Data)', accounts => {
+  testUpdatingData(accounts[0], accounts[1], S2TreeRegions);
 });
 
 const testQueryData = (Regions, region1Tree, region2Tree, region1Cells, region2Cells, region1DeeperCells, region2DeeperCells, outCells) => {
@@ -286,4 +320,24 @@ contract('S2Regions (Test Query)', () => {
   const deeper2 = ['0x0d5fffc386d91', '0x0d60008100004', '0x0d5fffc5ffffffff'].map(x => hexToCellID(x));
   const outs = ['0x0d5ffe01', '0x0d60071', '0x0d6006ffffffffff', '0x1', '0x129fffa9'].map(x => hexToCellID(x));
   testQueryData(S2CellsRegions, tree1, tree2, cells1, cells2, deeper1, deeper2, outs);
+});
+contract('GeohashTreeRegions (Test Query)', () => {
+  const tree1 = Array.from(dataManager.getGeohashTree('UJI'));
+  const tree2 = Array.from(dataManager.getGeohashTree('CPC'));
+  const cells1 = dataManager.getGeohash('UJI');
+  const cells2 = dataManager.getGeohash('CPC');
+  const deeper1 = ['ezpgw9e', 'ezpgw90', 'ezpgw91fz', 'ezpgw800000', 'ezpgw8ffe5'].map(x => base32ToCellID(x));
+  const deeper2 = ['ezpgx0000','ezpgx01egk','ezpgrpzzzzz','ezpgrrb'].map(x => base32ToCellID(x));
+  const outs = ['ezpgjx', 'sp0526', 'b3ezh', 'e', 'z', 'ez', '0'].map(x => base32ToCellID(x));
+  testQueryData(GeohashTreeRegions, tree1, tree2, cells1, cells2, deeper1, deeper2, outs);
+});
+contract('S2TreeRegions (Test Query)', () => {
+  const tree1 = Array.from(dataManager.getS2Base64Tree('UJI'));
+  const tree2 = Array.from(dataManager.getS2Base64Tree('CPC'));
+  const cells1 = dataManager.getS2Cells('UJI');
+  const cells2 = dataManager.getS2Cells('CPC');
+  const deeper1 = ['0x0d5ffe16b', '0x0d5ffdfd47ef'].map(x => hexToCellID(x));
+  const deeper2 = ['0x0d5fffc386d91', '0x0d60008100004', '0x0d5fffc5ffffffff'].map(x => hexToCellID(x));
+  const outs = ['0x0d5ffe01', '0x0d60071', '0x0d6006ffffffffff', '0x1', '0x129fffa9'].map(x => hexToCellID(x));
+  testQueryData(S2TreeRegions, tree1, tree2, cells1, cells2, deeper1, deeper2, outs);
 });

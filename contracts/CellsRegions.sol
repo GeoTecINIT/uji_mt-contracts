@@ -5,15 +5,6 @@ import './Utils.sol';
 import './Regions.sol';
 
 abstract contract CellsRegions is Regions {
-  uint8 internal OPEN_BYTE;
-  uint8 internal CLOSE_BYTE;
-  uint8 internal DATA_MASK;
-
-  uint64 internal LEVEL_LENGTH;
-  uint64 internal TREE_DATA_LENGTH;
-
-  uint64 private TREE_DATA_MARK_BITS;
-
   struct CellsRegion {
     uint64[] cellIDs;
     uint64[] failedCellIDs;
@@ -28,30 +19,14 @@ abstract contract CellsRegions is Regions {
   }
 
   mapping(uint8 => CellsRegion) private cellsRegions;
-  mapping(uint64 => uint8) private spaces;
+  mapping(uint64 => uint8) internal spaces;
 
   constructor(
     uint8 openByte,
     uint8 closeByte,
     uint64 levelLength,
     uint64 treeDataLength
-  ) {
-    OPEN_BYTE = openByte;
-    CLOSE_BYTE = closeByte;
-
-    LEVEL_LENGTH = levelLength;
-    TREE_DATA_LENGTH = treeDataLength;
-
-    uint64 markBits = 0;
-    for (uint64 i = 0; i < TREE_DATA_LENGTH; i++) {
-      markBits |= (uint64(1) << i);
-    }
-    TREE_DATA_MARK_BITS = markBits;
-  }
-
-  function getRegionIDFromExactCellID(uint64 cellID) public override view returns (uint8 regionID) {
-    return spaces[cellID];
-  }
+  ) Regions(openByte, closeByte, levelLength, treeDataLength) {}
 
   function addRegionCell(uint8 regionID, uint64 cellID) internal returns (bool) {
     uint8 destinationRegionId = spaces[cellID];
@@ -85,7 +60,7 @@ abstract contract CellsRegions is Regions {
     return (cellsRegion, newCellsIdx, newFailedCellsIdx);
   }
 
-  function addRegionCells(uint8 id, uint64[] memory cellIDs) public override returns (uint addedCount, uint failedCount) {
+  function addRegionCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
     require(regions[id].registrar == msg.sender);
     CellsRegion memory cellsRegion = cellsRegions[id];
     (cellsRegion, addedCount, failedCount) = addRegionCells(id, cellsRegion, cellIDs);
@@ -95,7 +70,7 @@ abstract contract CellsRegions is Regions {
     return (addedCount, failedCount);
   }
 
-  function clearFailedCells(uint8 id) public override {
+  function clearFailedCells(uint8 id) public {
     CellsRegion memory cellsRegion = cellsRegions[id];
     require(regions[id].registrar == msg.sender);
 
@@ -104,7 +79,7 @@ abstract contract CellsRegions is Regions {
     cellsRegions[id] = cellsRegion;
   }
 
-  function removeRegionCells(uint8 id, uint64[] memory cellIDs) public override {
+  function removeRegionCells(uint8 id, uint64[] memory cellIDs) public {
     CellsRegion memory cellsRegion = cellsRegions[id];
     require(regions[id].registrar == msg.sender);
 
@@ -119,27 +94,9 @@ abstract contract CellsRegions is Regions {
     cellsRegions[id] = cellsRegion;
   }
 
-  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public override returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
     return addRegionCells(id, cellIDs);
-  }
-
-  function updateRegionName(uint8 regionID, bytes memory newName) public override {
-    require(regions[regionID].registrar == msg.sender);
-    Region memory region = regions[regionID];
-    region.name = newName;
-    region.lastUpdatedEpoch = block.timestamp;
-    regions[regionID] = region;
-  }
-
-  function updateRegionIPs(uint8 regionID, uint32 ipv4, uint128 ipv6) public override {
-    require(regions[regionID].registrar == msg.sender);
-
-    Region memory region = regions[regionID];
-    region.ipv4 = ipv4;
-    region.ipv6 = ipv6;
-    region.lastUpdatedEpoch = block.timestamp;
-    regions[regionID] = region;
   }
 
   function getRegionData(uint8 id) public view returns (CellsRegionExternal memory data) {
@@ -191,12 +148,12 @@ abstract contract CellsRegions is Regions {
     }
   }
 
-  function addTree(uint8 id, uint8[] memory data) public override returns (uint addedCount, uint failedCount) {
+  function addTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
     uint64[] memory hashes = expandTree(data);
     return addRegionCells(id, hashes);
   }
 
-  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public override returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
     registerRegion(id, name, ipv4, ipv6);
     return addTree(id, data);
   }

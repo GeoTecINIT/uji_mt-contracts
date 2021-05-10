@@ -24,10 +24,14 @@ module.exports = async(deployer, networkName) => {
   // FOR TESTING (uncomment for `truffle test`)
   // const S2CellsRegions = artifacts.require('S2CellsRegions');
   // const GeohashCellsRegions = artifacts.require('GeohashCellsRegions');
+  // const S2TreeRegions = artifacts.require('S2TreeRegions');
+  // const GeohashTreeRegions = artifacts.require('GeohashTreeRegions');
   // const Regions = S2CellsRegions;
-  // await deployer.link(Utils, [S2CellsRegions, GeohashCellsRegions, Devices]);
+  // await deployer.link(Utils, [S2CellsRegions, GeohashCellsRegions, S2TreeRegions, GeohashTreeRegions, Devices]);
   // await deployer.deploy(S2CellsRegions);
   // await deployer.deploy(GeohashCellsRegions);
+  // await deployer.deploy(S2TreeRegions);
+  // await deployer.deploy(GeohashTreeRegions);
   // await deployer.link(Regions, Devices);
   // ---------------------------------------------
   // FOR DEPLOYMENT (uncomment for `truffle deploy/migrate --f 1`)

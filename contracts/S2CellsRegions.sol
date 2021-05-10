@@ -26,7 +26,7 @@ contract S2CellsRegions is CellsRegions {
   function query(uint64 cellID) public override view returns (Region memory region) {
     (uint64 finalMark, uint64 markBits) = getLevelMarkBits(cellID);
     while (markBits > 0) {
-      uint8 regionID = getRegionIDFromExactCellID(cellID);
+      uint8 regionID = spaces[cellID];
       if (regionID > 0) {
         return regions[regionID];
       }
