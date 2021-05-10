@@ -3,7 +3,7 @@
  * Change values in the capitalised variables to run an experiment on each factors.
  * This script should be run in `truffle exec` command.
  */
-const REGIONS_ARTIFACT = 'GeohashRegions'; // GeohashRegions|S2Regions
+const REGIONS_ARTIFACT = 'GeohashCellsRegions'; // GeohashCellsRegions|S2CellsRegions|GeohashTreeRegions|S2TreeRegions
 const PRECISION_INDEX = 0; // 0|1|2
 const ADD_MODE = 'cells'; // cells|tree
 
@@ -17,6 +17,23 @@ const ReputationManagement = artifacts.require('ReputationManagement');
 const Web3 = require('web3');
 const web3Utils = require('web3-utils');
 const fs = require('fs');
+
+const regionsTypeNames = {
+  GeohashCellsRegions: 'GeohashRegions',
+  GeohashTreeRegions: 'GeohashRegions',
+  S2CellsRegions: 'S2Regions',
+  S2TreeRegions: 'S2Regions'
+};
+
+const regionsIsCells = {
+  GeohashCellsRegions: true,
+  GeohashTreeRegions: false,
+  S2CellsRegions: true,
+  S2TreeRegions: false
+};
+
+const REGIONS_TYPE = regionsTypeNames[REGIONS_ARTIFACT];
+const REGIONS_IS_CELLS = regionsIsCells[REGIONS_ARTIFACT];
 
 // Mapping of PRECISION_INDEX to precision in each geocoding technique
 const precisions = {
@@ -68,11 +85,11 @@ module.exports = async(callback) => {
     };
     const createOptFn = file => async(action, attr, txHash = 0, timer = null) => await addStat(file, action, attr, txHash, timer);
   
-    const FILE_REGIONS = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_ARTIFACT][PRECISION_INDEX]}-${ADD_MODE}.csv`;
-    const FILE_REGIONS_INTERACT = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_ARTIFACT][PRECISION_INDEX]}-interact.csv`;
-    const FILE_REGIONS_DEVICES = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_ARTIFACT][PRECISION_INDEX]}-devices.csv`;
-    const FILE_BULK_DEVICES = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_ARTIFACT][PRECISION_INDEX]}-bulkdevices.csv`;
-    const FILE_REPUTATIONS = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_ARTIFACT][PRECISION_INDEX]}-reputations.csv`;
+    const FILE_REGIONS = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_TYPE][PRECISION_INDEX]}-${ADD_MODE}.csv`;
+    const FILE_REGIONS_INTERACT = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_TYPE][PRECISION_INDEX]}-interact.csv`;
+    const FILE_REGIONS_DEVICES = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_TYPE][PRECISION_INDEX]}-devices.csv`;
+    const FILE_BULK_DEVICES = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_TYPE][PRECISION_INDEX]}-bulkdevices.csv`;
+    const FILE_REPUTATIONS = `./out/experiment-${REGIONS_ARTIFACT.toLowerCase()}-${precisions[REGIONS_TYPE][PRECISION_INDEX]}-reputations.csv`;
   
     toFile(FILE_REGIONS, headers, fs.writeFileSync);
     toFile(FILE_REGIONS_INTERACT, headers, fs.writeFileSync);
@@ -81,7 +98,7 @@ module.exports = async(callback) => {
     toFile(FILE_REPUTATIONS, headers, fs.writeFileSync);
   
     const inputData = require('./experiments/read-input-data')();
-    const regionsArtifactData = inputData[REGIONS_ARTIFACT];
+    const regionsArtifactData = inputData[REGIONS_TYPE];
   
     const regions = await Regions.deployed();
     const devices = await Devices.deployed();
@@ -89,7 +106,7 @@ module.exports = async(callback) => {
 
     // Run experiments
     await require('./experiments/regions-add')(createOptFn(FILE_REGIONS), regions, regionsArtifactData, PRECISION_INDEX, ADD_MODE);
-    await require('./experiments/regions-interact')(createOptFn(FILE_REGIONS_INTERACT), regions, regionsArtifactData, inputData.regions, PRECISION_INDEX);
+    await require('./experiments/regions-interact')(createOptFn(FILE_REGIONS_INTERACT), regions, regionsArtifactData, inputData.regions, PRECISION_INDEX, REGIONS_IS_CELLS);
     await require('./experiments/regions-devices')(createOptFn(FILE_REGIONS_DEVICES), devices, regionsArtifactData, inputData.devices, accounts[1]);
     await require('./experiments/devices')(createOptFn(FILE_BULK_DEVICES), web3, devices, inputData.devices.subAccounts, regionsArtifactData.subLocations, regionsArtifactData.deviceMovements);
     await require('./experiments/reputations')(createOptFn(FILE_REPUTATIONS), reputationManagement, inputData.reputations, inputData.reputationQueries);
