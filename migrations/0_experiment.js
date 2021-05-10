@@ -5,8 +5,8 @@
  */
 const Migrations = artifacts.require('Migrations');
 const Utils = artifacts.require('Utils');
-const GeohashRegionsCells = artifacts.require('GeohashRegionsCells');
-const S2RegionsCells = artifacts.require('S2RegionsCells');
+const GeohashCellsRegions = artifacts.require('GeohashCellsRegions');
+const S2CellsRegions = artifacts.require('S2CellsRegions');
 const Devices = artifacts.require('Devices');
 const ReputationManagement = artifacts.require('ReputationManagement');
 
@@ -78,8 +78,8 @@ module.exports = async(deployer, networkName) => {
   }
 
   console.log('=== DEPLOYMENT LINE 1: GEOHASH ===');
-  await deployAndWriteStats(deployer, GeohashRegionsCells, networkID, 'out/experiment-contracts-geohash.csv');
+  await deployAndWriteStats(deployer, GeohashCellsRegions, networkID, 'out/experiment-contracts-geohash.csv');
 
   console.log('=== DEPLOYMENT LINE 2: S2 ===');
-  await deployAndWriteStats(deployer, S2RegionsCells, networkID, 'out/experiment-contracts-s2.csv');
+  await deployAndWriteStats(deployer, S2CellsRegions, networkID, 'out/experiment-contracts-s2.csv');
 };

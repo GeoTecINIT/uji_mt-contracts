@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import './RegionsCells.sol';
+import './Regions.sol';
 import './Utils.sol';
 
 contract Devices {
-  RegionsCells public regionsContract;
+  Regions public regionsContract;
   
   struct Device {
     address addr;
@@ -25,7 +25,7 @@ contract Devices {
   mapping(uint8 => address[]) private devicesInRegions;
 
   constructor(address regionsContractAddress) {
-    regionsContract = RegionsCells(regionsContractAddress);
+    regionsContract = Regions(regionsContractAddress);
   }
 
   function getDeviceFromAddress(address addr) public view returns (Device memory device) {
@@ -53,7 +53,7 @@ contract Devices {
   }
 
   function getDevicesInSameRegionWithService(uint64 location, uint32 service) public view returns (Devices.Device[] memory devicesList) {
-    Regions.RegionMetadata memory region = regionsContract.query(location);
+    Regions.Region memory region = regionsContract.query(location);
     if (region.id == 0) {
       return new Device[](0);
     }

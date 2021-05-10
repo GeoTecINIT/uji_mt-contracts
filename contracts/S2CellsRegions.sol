@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-import './RegionsCells.sol';
+import './CellsRegions.sol';
 
-contract S2RegionsCells is RegionsCells {
-  constructor() RegionsCells(
+contract S2CellsRegions is CellsRegions {
+  constructor() CellsRegions(
     0x40, // open byte:   01?? ????
     0x80, // close byte:  1000 0000
     2,    // level length:        2
@@ -23,18 +23,18 @@ contract S2RegionsCells is RegionsCells {
     }
   }
 
-  function query(uint64 cellID) public override view returns (RegionMetadata memory region) {
+  function query(uint64 cellID) public override view returns (Region memory region) {
     (uint64 finalMark, uint64 markBits) = getLevelMarkBits(cellID);
     while (markBits > 0) {
-      uint8 regionId = getRegionIDFromExactCellID(cellID);
-      if (regionId > 0) {
-        return getRegionFromID(regionId).metadata;
+      uint8 regionID = getRegionIDFromExactCellID(cellID);
+      if (regionID > 0) {
+        return regions[regionID];
       }
 
       markBits = markBits << 2;
       finalMark = finalMark << 2;
       cellID = (cellID & markBits) | finalMark;
     }
-    return RegionMetadata({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0});
+    return Region({id: 0, registrar: address(0), name: "", ipv4: 0, ipv6: 0, lastUpdatedEpoch: 0});
   }
 }

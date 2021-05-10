@@ -4,7 +4,7 @@
  */
 const truffleConfig = require('./truffle-config');
 
-const defaultRegions = 'S2RegionsCells';
+const defaultRegions = 'S2CellsRegions';
 
 module.exports = networkName => {
   if (networkName) {
