@@ -5,7 +5,7 @@ import './Devices.sol';
 
 contract ReputationManagement {
   Devices private devicesContract;
-  RegionsCells private regionsContract;
+  Regions private regionsContract;
 
   struct Reputation {
     uint64 value; // 0x0 to 0xfffffffffffffffff
@@ -24,7 +24,7 @@ contract ReputationManagement {
 
   constructor(address devicesContractAddress) {
     devicesContract = Devices(devicesContractAddress);
-    regionsContract = RegionsCells(devicesContract.getRegionsContractAddress());
+    regionsContract = Regions(devicesContract.getRegionsContractAddress());
   }
 
   function getReputationData(uint8 regionID, address deviceAddr, uint32 serviceName) public view returns (Reputation memory reputation) {
@@ -55,7 +55,7 @@ contract ReputationManagement {
   }
 
   function getInSameRegionWithService(uint64 location, uint32 service) public view returns (DeviceReputation[] memory devicesList) {
-    Regions.RegionMetadata memory region = regionsContract.query(location);
+    Regions.Region memory region = regionsContract.query(location);
     if (region.id == 0) {
       return new DeviceReputation[](0);
     }
@@ -63,8 +63,8 @@ contract ReputationManagement {
   }
 
   function updateReputation(uint8 regionID, address deviceAddr, uint32 serviceName, uint64 reputationValue) public {
-    Regions.RegionMetadata memory regionMetadata = regionsContract.getRegionData(regionID).metadata;
-    require(regionMetadata.registrar == msg.sender);
+    Regions.Region memory region = regionsContract.getRegion(regionID);
+    require(region.registrar == msg.sender);
 
     Reputation memory reputation = getReputationData(regionID, deviceAddr, serviceName);
     reputation = addRecord(reputation, reputationValue, block.timestamp);

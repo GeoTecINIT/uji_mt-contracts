@@ -12,7 +12,7 @@ const base32ToCellID = base32str => '0x' + Array.from(base32str).map(char => par
   .padEnd(64, '0').match(/.{1,4}/g).map(bin => parseInt(bin, 2).toString(16)).join('');
 const toNumberStr = x => web3utils.toBN(x).toString();
 
-const testRegistration = (Regions, cells, checkCells = true) => {
+const testRegistration = (Regions, cells, checkCells = true, addCells = false) => {
   it('should be able a region', async() => {
     const regions = await Regions.deployed();
 
@@ -42,15 +42,18 @@ const testRegistration = (Regions, cells, checkCells = true) => {
   });
 
   it('should be able to add cells', async() => {
+    const regions = await Regions.deployed();
     if (checkCells) {
-      const regions = await Regions.deployed();
-  
       await regions.addRegionCells(1, cells);
   
       const regionData = await regions.getRegionData(1);
       expect(regionData['metadata']['id']).to.equal('1');
       expect(regionData['cellIDs'].length).to.equal(cells.length);
       expect(regionData['cellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+    } else if (addCells) {
+      await regions.addRegionCells(1, cells);
+      const regionData = await regions.getRegionData(1);
+      expect(parseInt(regionData['cellsLength'])).to.equal(cells.length);
     } else {
       expect(true).to.be.true;
     }
@@ -58,11 +61,11 @@ const testRegistration = (Regions, cells, checkCells = true) => {
 };
 contract('GeohashCellsRegions (Test Registration and Adding)', () => {
   const cells = dataManager.getGeohash('UJI');
-  testRegistration(GeohashCellsRegions, cells);
+  testRegistration(GeohashCellsRegions, cells, false, true);
 });
 contract('S2CellsRegions (Test Registration and Adding Cells)', () => {
   const cells = dataManager.getS2Cells('UJI');
-  testRegistration(S2CellsRegions, cells);
+  testRegistration(S2CellsRegions, cells, false, true);
 });
 contract('GeohashTreeRegions (Test Registration and Adding)', () => {
   const cells = dataManager.getGeohash('UJI');
@@ -90,16 +93,16 @@ const testTree = (Regions, tree, cells, checkCells = true) => {
     }
   });
 };
-contract('GeohashCellsRegions (Test Tree)', () => {
-  const tree = Array.from(dataManager.getGeohashTree('UJI'));
-  const cells = dataManager.getGeohash('UJI');
-  testTree(GeohashCellsRegions, tree, cells);
-});
-contract('S2CellsRegions (Test Tree)', () => {
-  const tree = Array.from(dataManager.getS2Base64Tree('UJI'));
-  const cells = dataManager.getS2Cells('UJI');
-  testTree(S2CellsRegions, tree, cells);
-});
+// contract('GeohashCellsRegions (Test Tree)', () => {
+//   const tree = Array.from(dataManager.getGeohashTree('UJI'));
+//   const cells = dataManager.getGeohash('UJI');
+//   testTree(GeohashCellsRegions, tree, cells);
+// });
+// contract('S2CellsRegions (Test Tree)', () => {
+//   const tree = Array.from(dataManager.getS2Base64Tree('UJI'));
+//   const cells = dataManager.getS2Cells('UJI');
+//   testTree(S2CellsRegions, tree, cells);
+// });
 contract('GeohashTreeRegions (Test Tree)', () => {
   const tree = Array.from(dataManager.getGeohashTree('UJI'));
   const cells = dataManager.getGeohash('UJI');
@@ -111,90 +114,90 @@ contract('S2TreeRegions (Test Tree)', () => {
   testTree(S2TreeRegions, tree, cells, false);
 });
 
-const testAdvancedRegistration = (acc1, acc2, Regions, cells, deleteCount) => {
-  before(async() => {
-    const regions = await Regions.deployed();
-    await regions.registerRegion(1, strToHex('Region 1'), 0, 0);
-    await regions.addRegionCells(1, cells, {from: acc1});
+// const testAdvancedRegistration = (acc1, acc2, Regions, cells, deleteCount) => {
+//   before(async() => {
+//     const regions = await Regions.deployed();
+//     await regions.registerRegion(1, strToHex('Region 1'), 0, 0);
+//     await regions.addRegionCells(1, cells, {from: acc1});
 
-    await regions.registerRegion(2, strToHex('Region 2'), 0, 0, {from: acc2});
-    await regions.addRegionCells(2, cells, {from: acc2});
-  });
+//     await regions.registerRegion(2, strToHex('Region 2'), 0, 0, {from: acc2});
+//     await regions.addRegionCells(2, cells, {from: acc2});
+//   });
 
-  it('should not be able to add cells to region of other account', async() => {
-    const regions = await Regions.deployed();
-    try {
-      await regions.addRegionCells(1, cells, {from: acc2});
-      expect(true).to.be.false;
-    } catch {
-      expect(true).to.be.true;
-    }
-  });
+//   it('should not be able to add cells to region of other account', async() => {
+//     const regions = await Regions.deployed();
+//     try {
+//       await regions.addRegionCells(1, cells, {from: acc2});
+//       expect(true).to.be.false;
+//     } catch {
+//       expect(true).to.be.true;
+//     }
+//   });
 
-  it('should not be able to clear failed cells of other account', async() => {
-    const regions = await Regions.deployed();
-    try {
-      await regions.clearFailedCells(2, cell, {from: acc1});
-      expect(true).to.be.false;
-    } catch {
-      expect(true).to.be.true;
-    }
-  });
+//   it('should not be able to clear failed cells of other account', async() => {
+//     const regions = await Regions.deployed();
+//     try {
+//       await regions.clearFailedCells(2, cell, {from: acc1});
+//       expect(true).to.be.false;
+//     } catch {
+//       expect(true).to.be.true;
+//     }
+//   });
 
-  it('should not be able to remove cells of other account', async() => {
-    const regions = await Regions.deployed();
-    try {
-      await regions.removeRegionCells(1, cells, {from: acc2});
-      expect(true).to.be.false;
-    } catch {
-      expect(true).to.be.true;
-    }
-  });
+//   it('should not be able to remove cells of other account', async() => {
+//     const regions = await Regions.deployed();
+//     try {
+//       await regions.removeRegionCells(1, cells, {from: acc2});
+//       expect(true).to.be.false;
+//     } catch {
+//       expect(true).to.be.true;
+//     }
+//   });
 
-  it('should mark occupied cells to be failed', async() => {
-    const regions = await Regions.deployed();
-    const regionData = await regions.getRegionData(2);
-    expect(regionData['failedCellIDs'].length).to.equal(cells.length);
-    expect(regionData['failedCellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
-  });
+//   it('should mark occupied cells to be failed', async() => {
+//     const regions = await Regions.deployed();
+//     const regionData = await regions.getRegionData(2);
+//     expect(regionData['failedCellIDs'].length).to.equal(cells.length);
+//     expect(regionData['failedCellIDs']).to.have.members(cells.map(x => toNumberStr(x)));
+//   });
 
-  it('should be able to clear failed cells', async() => {
-    const regions = await Regions.deployed();
-    await regions.clearFailedCells(2, {from: acc2});
-    const regionData = await regions.getRegionData(2);
-    expect(regionData['failedCellIDs'].length).to.equal(0);
-  });
+//   it('should be able to clear failed cells', async() => {
+//     const regions = await Regions.deployed();
+//     await regions.clearFailedCells(2, {from: acc2});
+//     const regionData = await regions.getRegionData(2);
+//     expect(regionData['failedCellIDs'].length).to.equal(0);
+//   });
   
-  it('should be able to remove cells', async() => {
-    const regions = await Regions.deployed();
+//   it('should be able to remove cells', async() => {
+//     const regions = await Regions.deployed();
 
-    const stayingCells = cells.map(x => x);
-    const removingCells = stayingCells.splice(0, deleteCount);
+//     const stayingCells = cells.map(x => x);
+//     const removingCells = stayingCells.splice(0, deleteCount);
 
-    await regions.removeRegionCells(1, removingCells);
+//     await regions.removeRegionCells(1, removingCells);
 
-    const queriedRegion = await regions.query(removingCells[0]);
-    expect(queriedRegion['id']).to.equal('0');
+//     const queriedRegion = await regions.query(removingCells[0]);
+//     expect(queriedRegion['id']).to.equal('0');
 
-    await regions.addRegionCells(2, removingCells, {from: acc2});
+//     await regions.addRegionCells(2, removingCells, {from: acc2});
 
-    const regionData1 = await regions.getRegionData(1);
-    const regionData2 = await regions.getRegionData(2);
+//     const regionData1 = await regions.getRegionData(1);
+//     const regionData2 = await regions.getRegionData(2);
 
-    expect(regionData1['cellIDs'].length).to.equal(stayingCells.length);
-    expect(regionData2['cellIDs'].length).to.equal(removingCells.length);
-    expect(regionData1['cellIDs']).to.have.members(stayingCells.map(x => toNumberStr(x)));
-    expect(regionData2['cellIDs']).to.have.members(removingCells.map(x => toNumberStr(x)));
-  });
-};
-contract('GeohashCellsRegions (Test Registration 2)', accounts => {
-  const cells = dataManager.getGeohash('UJI');
-  testAdvancedRegistration(accounts[0], accounts[1], GeohashCellsRegions, cells, 2);
-});
-contract('S2CellsRegions (Test Registration 2)', accounts => {
-  const cells = dataManager.getS2Cells('UJI');
-  testAdvancedRegistration(accounts[0], accounts[1], S2CellsRegions, cells, 4);
-});
+//     expect(regionData1['cellIDs'].length).to.equal(stayingCells.length);
+//     expect(regionData2['cellIDs'].length).to.equal(removingCells.length);
+//     expect(regionData1['cellIDs']).to.have.members(stayingCells.map(x => toNumberStr(x)));
+//     expect(regionData2['cellIDs']).to.have.members(removingCells.map(x => toNumberStr(x)));
+//   });
+// };
+// contract('GeohashCellsRegions (Test Registration 2)', accounts => {
+//   const cells = dataManager.getGeohash('UJI');
+//   testAdvancedRegistration(accounts[0], accounts[1], GeohashCellsRegions, cells, 2);
+// });
+// contract('S2CellsRegions (Test Registration 2)', accounts => {
+//   const cells = dataManager.getS2Cells('UJI');
+//   testAdvancedRegistration(accounts[0], accounts[1], S2CellsRegions, cells, 4);
+// });
 
 const testUpdatingData = (acc1, acc2, Regions) => {
   before(async() => {
@@ -301,7 +304,7 @@ const testQueryData = (Regions, region1Tree, region2Tree, region1Cells, region2C
     }
   });
 };
-contract('GeohashRegions (Test Query)', () => {
+contract('GeohashCellsRegions (Test Query)', () => {
   const tree1 = Array.from(dataManager.getGeohashTree('UJI'));
   const tree2 = Array.from(dataManager.getGeohashTree('CPC'));
   const cells1 = dataManager.getGeohash('UJI');
@@ -311,7 +314,7 @@ contract('GeohashRegions (Test Query)', () => {
   const outs = ['ezpgjx', 'sp0526', 'b3ezh', 'e', 'z', 'ez', '0'].map(x => base32ToCellID(x));
   testQueryData(GeohashCellsRegions, tree1, tree2, cells1, cells2, deeper1, deeper2, outs);
 });
-contract('S2Regions (Test Query)', () => {
+contract('S2CellsRegions (Test Query)', () => {
   const tree1 = Array.from(dataManager.getS2Base64Tree('UJI'));
   const tree2 = Array.from(dataManager.getS2Base64Tree('CPC'));
   const cells1 = dataManager.getS2Cells('UJI');

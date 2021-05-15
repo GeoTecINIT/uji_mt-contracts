@@ -51,6 +51,10 @@ abstract contract Regions {
 
   function query(uint64 cellID) public virtual view returns (Region memory region);
 
+  function getRegion(uint8 regionID) public view returns (Region memory) {
+    return regions[regionID];
+  }
+
   function updateRegionName(uint8 regionID, bytes memory newName) public {
     require(regions[regionID].registrar == msg.sender);
     Region memory region = regions[regionID];

@@ -6,15 +6,13 @@ import './Regions.sol';
 
 abstract contract CellsRegions is Regions {
   struct CellsRegion {
-    uint64[] cellIDs;
-    uint64[] failedCellIDs;
+    uint64 cellsLength;
     uint lastUpdatedEpoch;
   }
 
   struct CellsRegionExternal {
     Region metadata;
-    uint64[] cellIDs;
-    uint64[] failedCellIDs;
+    uint64 cellsLength;
     uint lastUpdatedEpoch;
   }
 
@@ -28,82 +26,38 @@ abstract contract CellsRegions is Regions {
     uint64 treeDataLength
   ) Regions(openByte, closeByte, levelLength, treeDataLength) {}
 
-  function addRegionCell(uint8 regionID, uint64 cellID) internal returns (bool) {
-    uint8 destinationRegionId = spaces[cellID];
-    if (destinationRegionId == 0 || destinationRegionId == regionID) {
-      spaces[cellID] = regionID;
-      return true;
-    }
-    return false;
+  function registerRegion(uint8 id, bytes memory name, uint32 ipv4, uint128 ipv6) public override {
+    super.registerRegion(id, name, ipv4, ipv6);
+    cellsRegions[id] = CellsRegion({
+      cellsLength: 0,
+      lastUpdatedEpoch: block.timestamp
+    });
   }
 
-  function addRegionCells(uint8 regionID, CellsRegion memory cellsRegion, uint64[] memory cellIDs)
-    internal returns (CellsRegion memory, uint addedCount, uint failedCount) {
-    uint64[] memory newCells = Utils.extendUint64Array(cellsRegion.cellIDs, cellIDs.length);
-    uint256 newCellsIdx = cellsRegion.cellIDs.length;
+  function addRegionCells(uint8 id, uint64[] memory cellIDs) public {
+    require(regions[id].registrar == msg.sender);
 
-    uint64[] memory newFailedCells = Utils.extendUint64Array(cellsRegion.failedCellIDs, cellIDs.length);
-    uint256 newFailedCellsIdx = cellsRegion.failedCellIDs.length;
-
+    uint64 cellsLength = cellsRegions[id].cellsLength;
     for (uint i = 0; i < cellIDs.length; i++) {
-      if (addRegionCell(regionID, cellIDs[i])) {
-        newCells[newCellsIdx++] = cellIDs[i];
-      } else if (!Utils.existsInUint64Array(newFailedCells, cellIDs[i])) {
-        newFailedCells[newFailedCellsIdx++] = cellIDs[i];
+      if (spaces[cellIDs[i]] == 0) {
+        spaces[cellIDs[i]] = id;
+        cellsLength++;
       }
     }
 
-    cellsRegion.cellIDs = Utils.cutUint64Array(newCells, newCellsIdx);
-    cellsRegion.failedCellIDs = Utils.cutUint64Array(newFailedCells, newFailedCellsIdx);
-    cellsRegion.lastUpdatedEpoch = block.timestamp;
-
-    return (cellsRegion, newCellsIdx, newFailedCellsIdx);
+    cellsRegions[id].cellsLength = cellsLength;
+    cellsRegions[id].lastUpdatedEpoch = block.timestamp;
   }
 
-  function addRegionCells(uint8 id, uint64[] memory cellIDs) public returns (uint addedCount, uint failedCount) {
-    require(regions[id].registrar == msg.sender);
-    CellsRegion memory cellsRegion = cellsRegions[id];
-    (cellsRegion, addedCount, failedCount) = addRegionCells(id, cellsRegion, cellIDs);
-
-    cellsRegions[id] = cellsRegion;
-
-    return (addedCount, failedCount);
-  }
-
-  function clearFailedCells(uint8 id) public {
-    CellsRegion memory cellsRegion = cellsRegions[id];
-    require(regions[id].registrar == msg.sender);
-
-    cellsRegion.failedCellIDs = new uint64[](0);
-    cellsRegion.lastUpdatedEpoch = block.timestamp;
-    cellsRegions[id] = cellsRegion;
-  }
-
-  function removeRegionCells(uint8 id, uint64[] memory cellIDs) public {
-    CellsRegion memory cellsRegion = cellsRegions[id];
-    require(regions[id].registrar == msg.sender);
-
-    for (uint i = 0; i < cellIDs.length; i++) {
-      if (spaces[cellIDs[i]] == id) {
-        spaces[cellIDs[i]] = 0;
-      }
-    }
-
-    cellsRegion.cellIDs = Utils.substractFromUint64Array(cellsRegion.cellIDs, cellIDs);
-    cellsRegion.lastUpdatedEpoch = block.timestamp;
-    cellsRegions[id] = cellsRegion;
-  }
-
-  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddCells(uint8 id, bytes memory name, uint64[] memory cellIDs, uint32 ipv4, uint128 ipv6) public {
     registerRegion(id, name, ipv4, ipv6);
-    return addRegionCells(id, cellIDs);
+    addRegionCells(id, cellIDs);
   }
 
   function getRegionData(uint8 id) public view returns (CellsRegionExternal memory data) {
     return CellsRegionExternal({
       metadata: regions[id],
-      cellIDs: cellsRegions[id].cellIDs,
-      failedCellIDs: cellsRegions[id].failedCellIDs,
+      cellsLength: cellsRegions[id].cellsLength,
       lastUpdatedEpoch: cellsRegions[id].lastUpdatedEpoch
     });
   }
@@ -148,13 +102,13 @@ abstract contract CellsRegions is Regions {
     }
   }
 
-  function addTree(uint8 id, uint8[] memory data) public returns (uint addedCount, uint failedCount) {
+  function addTree(uint8 id, uint8[] memory data) public {
     uint64[] memory hashes = expandTree(data);
-    return addRegionCells(id, hashes);
+    addRegionCells(id, hashes);
   }
 
-  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public returns (uint addedCount, uint failedCount) {
+  function registerRegionAndAddTree(uint8 id, bytes memory name, uint8[] memory data, uint32 ipv4, uint128 ipv6) public {
     registerRegion(id, name, ipv4, ipv6);
-    return addTree(id, data);
+    addTree(id, data);
   }
 }
