@@ -25,15 +25,7 @@ const regionsTypeNames = {
   S2TreeRegions: 'S2Regions'
 };
 
-const regionsIsCells = {
-  GeohashCellsRegions: true,
-  GeohashTreeRegions: false,
-  S2CellsRegions: true,
-  S2TreeRegions: false
-};
-
 const REGIONS_TYPE = regionsTypeNames[REGIONS_ARTIFACT];
-const REGIONS_IS_CELLS = regionsIsCells[REGIONS_ARTIFACT];
 
 // Mapping of PRECISION_INDEX to precision in each geocoding technique
 const precisions = {
@@ -106,7 +98,7 @@ module.exports = async(callback) => {
 
     // Run experiments
     await require('./experiments/regions-add')(createOptFn(FILE_REGIONS), regions, regionsArtifactData, PRECISION_INDEX, ADD_MODE);
-    await require('./experiments/regions-interact')(createOptFn(FILE_REGIONS_INTERACT), regions, regionsArtifactData, inputData.regions, PRECISION_INDEX, REGIONS_IS_CELLS);
+    await require('./experiments/regions-interact')(createOptFn(FILE_REGIONS_INTERACT), regions, regionsArtifactData, inputData.regions, PRECISION_INDEX, false);
     await require('./experiments/regions-devices')(createOptFn(FILE_REGIONS_DEVICES), devices, regionsArtifactData, inputData.devices, accounts[1]);
     await require('./experiments/devices')(createOptFn(FILE_BULK_DEVICES), web3, devices, inputData.devices.subAccounts, regionsArtifactData.subLocations, regionsArtifactData.deviceMovements);
     await require('./experiments/reputations')(createOptFn(FILE_REPUTATIONS), reputationManagement, inputData.reputations, inputData.reputationQueries);
